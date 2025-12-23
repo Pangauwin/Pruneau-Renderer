@@ -1,21 +1,14 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <imgui.h>
+#include "core/application.h"
 
 int main()
 {
-    glfwInit();
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Renderer", nullptr, nullptr);
-    glfwMakeContextCurrent(window);
+	Core::AppParams app_params;
+	app_params.window_params.width = 1080;
+	app_params.window_params.height = 720;
+	app_params.window_params.title = "Pruneau Renderer v1";
 
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+	Core::Application app(app_params);
+	app.Run();
 
-    while (!glfwWindowShouldClose(window))
-    {
-        glClear(GL_COLOR_BUFFER_BIT);
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    glfwTerminate();
+	return 0;
 }
