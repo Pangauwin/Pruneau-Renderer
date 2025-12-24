@@ -36,4 +36,16 @@ public:
 	}
 };
 
+#pragma region Events
+class WindowCloseEvent : public Event
+{
+public:
+	static event_type GetStaticType() { return event_type::event_type_window_close; }
+	event_type GetEventType() const override { return GetStaticType(); }
+	const char* GetName() const override { return "WindowClose"; }
+	int GetCategoryFlags() const override { return event_category_application; }
+};
+
+#pragma endregion
+
 }
