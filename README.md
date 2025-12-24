@@ -28,6 +28,8 @@ A lightweight 3D renderer written in C++ with the goal of evolving into a full-f
 
 ### Build Instructions
 
+#### WARNING ! This project only builds on Windows
+
 1. Clone the repository:
     ```bash
     git clone https://github.com/Pangauwin/Pruneau-Renderer.git
@@ -53,3 +55,4 @@ A lightweight 3D renderer written in C++ with the goal of evolving into a full-f
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
