@@ -1,16 +1,23 @@
 #include "application.h"
 
 #include <memory>
+#include <string>
 
 #include "../platform/window.h"
 
 
 #include "layer.h"
 #include "../layers/engine_layer.h"
+#include "../renderer/renderer.h"
 
 static float dt = 0.00001f;
 
 static Core::Application* current_application;
+
+void Core::LogMessage(std::string _message)
+{
+	Core::Application::Get()->LogMessage(_message);
+}
 
 Core::Application::Application(AppParams _params) : 
 	m_window(std::make_unique<Platform::Window>(_params.window_params)), 
@@ -18,8 +25,9 @@ Core::Application::Application(AppParams _params) :
 	m_engine_layer(new EngineLayer::EngineLayer()),
 	m_app_should_close(false)
 {
-	PushOverlay(m_engine_layer);
 	current_application = this;
+
+	PushOverlay(m_engine_layer);
 }
 
 Core::Application::~Application()
@@ -105,6 +113,11 @@ Core::Application* Core::Application::Get()
 	return current_application;
 }
 
+void Core::Application::LogMessage(std::string _message)
+{
+	m_engine_layer->LogMessage(_message);
+}
+
 void Core::Application::PollEvents()
 {
 	m_window->PollEvents();
@@ -112,7 +125,8 @@ void Core::Application::PollEvents()
 
 float Core::Application::CalculateDeltaTime()
 {
-	return 0.0f;
+	// TODO : Implement this
+	return 0.00001f;
 }
 
 void Core::Application::OnClose()

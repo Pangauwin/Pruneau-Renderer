@@ -1,20 +1,22 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 #include "layer.h"
 #include "layer_stack.h"
 
 #include "../platform/window.h"
-
 #include "../renderer/renderer.h"
-
+#include "../layers/engine_layer.h"
 
 namespace Core {
 
 struct AppParams {
 	Platform::WindowParams window_params;
 };
+
+void LogMessage(std::string _message);
 
 class Application {
 public:
@@ -30,6 +32,8 @@ public:
 
 	static Application* Get();
 
+	void LogMessage(std::string _message);
+
 private:
 	void PollEvents();
 	float CalculateDeltaTime();
@@ -37,10 +41,11 @@ private:
 private:
 	void OnClose();
 
-private:
+public:
 	std::unique_ptr<Platform::Window> m_window;
 	std::unique_ptr<Renderer::Renderer> m_renderer;
 
+private:
 	bool m_app_should_close;
 
 	LayerStack m_layer_stack;

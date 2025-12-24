@@ -2,6 +2,8 @@
 
 #include <glad/glad.h>
 
+#include "../core/application.h"
+
 Renderer::Framebuffer::Framebuffer(uint32_t _width, uint32_t _height) : m_width(_width), m_height(_height)
 {
 	Invalidate();
@@ -23,6 +25,8 @@ void Renderer::Framebuffer::Bind()
 void Renderer::Framebuffer::UnBind()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glViewport(0, 0, Core::Application::Get()->m_window->params->width, Core::Application::Get()->m_window->params->height);
 }
 
 void Renderer::Framebuffer::Resize(uint32_t _width, uint32_t _height)
@@ -36,6 +40,9 @@ void Renderer::Framebuffer::Resize(uint32_t _width, uint32_t _height)
 
 void Renderer::Framebuffer::Invalidate()
 {
+    if (m_width == 0 || m_height == 0)
+        return;
+
 	if (m_renderer_id)
 	{
 		glDeleteFramebuffers(1, &m_renderer_id);
@@ -53,6 +60,9 @@ void Renderer::Framebuffer::Invalidate()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
     glFramebufferTexture2D(
         GL_FRAMEBUFFER,
         GL_COLOR_ATTACHMENT0,
@@ -69,6 +79,11 @@ void Renderer::Framebuffer::Invalidate()
         GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr
     );
 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
     glFramebufferTexture2D(
         GL_FRAMEBUFFER,
         GL_DEPTH_STENCIL_ATTACHMENT,
@@ -77,9 +92,34 @@ void Renderer::Framebuffer::Invalidate()
         0
     );
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    GLenum buffers[1] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, buffers);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
     {
-        // TODO : Log error
+        std::string error_msg = "Framebuffer incomplete: ";
+
+        switch (status)
+        {
+        case GL_FRAMEBUFFER_UNDEFINED:
+            error_msg +=  "UNDEFINED"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+            error_msg += "INCOMPLETE_ATTACHMENT"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+            error_msg += "MISSING_ATTACHMENT"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+            error_msg += "INCOMPLETE_DRAW_BUFFER"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+            error_msg += "INCOMPLETE_READ_BUFFER"; break;
+        case GL_FRAMEBUFFER_UNSUPPORTED:
+            error_msg += "UNSUPPORTED"; break;
+        default:
+            error_msg = "UNKNOWN (" + status + (std::string)")";
+        }
+
+        Core::Application::Get()->LogMessage(error_msg);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

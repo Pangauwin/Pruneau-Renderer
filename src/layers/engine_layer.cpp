@@ -1,6 +1,13 @@
 #include "engine_layer.h"
 
 #include <imgui.h>
+#include <string>
+
+#include "../core/application.h"
+
+#define CONSOLE_COMMAND_MAX_SIZE 512
+
+static char command[CONSOLE_COMMAND_MAX_SIZE];
 
 void EngineLayer::EngineLayer::OnAttach()
 {
@@ -46,7 +53,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
         {
             if (ImGui::MenuItem("Exit"))
             {
-                // TODO : trigger WindowCloseEvent
+                Core::Application::Get()->CloseApplication();
             }
             ImGui::EndMenu();
         }
@@ -55,7 +62,20 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
     ImGui::End();
 
-	ImGui::Begin("test window");
+	ImGui::Begin("Console");
+
+    for (std::string message : m_message_pool)
+    {
+        ImGui::Text(message.c_str());
+    }
+
+    if (ImGui::InputText("command", command, CONSOLE_COMMAND_MAX_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        // TODO : Interpret the command and log the result instead of the command
+        LogMessage(command);
+    }
+
+    ImGui::SetScrollHereY(1.0f);
 
 	ImGui::End();
 }
@@ -67,4 +87,9 @@ void EngineLayer::EngineLayer::OnEvent(Core::Event& _event)
 		ImGuiIO& io = ImGui::GetIO();
 		_event.handled |= io.WantCaptureKeyboard || io.WantCaptureMouse;
 	}
+}
+
+void EngineLayer::EngineLayer::LogMessage(std::string _message)
+{
+    m_message_pool.push_back(_message);
 }

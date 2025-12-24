@@ -11,6 +11,9 @@
 
 void frame_buffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
+
+	Core::Application::Get()->m_window->params->height = height;
+	Core::Application::Get()->m_window->params->width = width;
 }
 
 void window_close_callback(GLFWwindow* window) {
@@ -20,15 +23,19 @@ void window_close_callback(GLFWwindow* window) {
 #pragma endregion
 
 
-Platform::Window::Window(WindowParams& _params)
+Platform::Window::Window(WindowParams& _params) : params(new WindowParams()), m_glfw_window(NULL)
 {
+	params->height = _params.height;
+	params->width = _params.width;
+	params->title = _params.title;
+
 	glfwInit();
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	m_glfw_window = glfwCreateWindow(_params.width, _params.height, _params.title, NULL, NULL);
+	m_glfw_window = glfwCreateWindow(params->width, params->height, params->title, NULL, NULL);
 
 	if (m_glfw_window == NULL)
 	{
@@ -48,7 +55,7 @@ Platform::Window::Window(WindowParams& _params)
 		window_close_callback(m_glfw_window);
 	}
 
-	glViewport(0, 0, _params.width, _params.height);
+	glViewport(0, 0, params->width, params->height);
 
 	glfwSetFramebufferSizeCallback(m_glfw_window, frame_buffer_size_callback);
 	glfwSetWindowCloseCallback(m_glfw_window, window_close_callback);
