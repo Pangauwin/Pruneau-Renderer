@@ -1,7 +1,15 @@
-add_executable("Pruneau-Renderer"
-    main.cpp
- "platform/window.h" "platform/window.cpp" "core/application.h" "core/application.cpp" "core/layer.h" "core/layer_stack.h" "core/layer_stack.cpp" "layers/engine_layer.h" "layers/engine_layer.cpp" "renderer/renderer.h" "renderer/renderer.cpp" "core/event/event.h" "core/event/event_dispatcher.h" "renderer/frame_buffer.h" "renderer/frame_buffer.cpp")
+set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
+set(HEADER_DIR "${CMAKE_SOURCE_DIR}/src")
 
+file(GLOB_RECURSE SOURCES
+    "${SRC_DIR}/*.cpp"
+)
+
+file(GLOB_RECURSE HEADERS
+    "${HEADER_DIR}/*.h"
+)
+
+add_executable("Pruneau-Renderer" ${SOURCES} ${HEADERS})
 target_link_libraries("Pruneau-Renderer" PRIVATE
     glfw
     glad
@@ -9,7 +17,9 @@ target_link_libraries("Pruneau-Renderer" PRIVATE
     imguizmo
     stb
     glm
+    assimp
 )
+target_include_directories("Pruneau-Renderer" PUBLIC ${HEADER_DIR})
 
 if (UNIX)
     target_link_libraries("Pruneau-Renderer" PRIVATE GL)
