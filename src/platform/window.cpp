@@ -6,18 +6,34 @@
 #include <Windows.h> // Message boxes
 
 #include "../core/application.h"
+#include "core/event/events/file_drop.h"
 
 #pragma region glfw_callbacks
 
-void frame_buffer_size_callback(GLFWwindow* window, int width, int height) {
-	glViewport(0, 0, width, height);
+static void frame_buffer_size_callback(GLFWwindow* window, int width, int height) {
+	glViewport(0, 0, width, height); // TODO : Remove this ?
 
 	Core::Application::Get()->m_window->params->height = height;
 	Core::Application::Get()->m_window->params->width = width;
 }
 
-void window_close_callback(GLFWwindow* window) {
+static void window_close_callback(GLFWwindow* window) {
 	Core::Application::Get()->CloseApplication();
+}
+
+static void drop_file_callback(GLFWwindow* window, int count, const char** paths)
+{
+	std::vector<std::string> filepaths;
+	filepaths.reserve(count);
+
+	for (int i = 0; i < count; i++)
+	{
+		filepaths.emplace_back(paths[i]);
+	}
+
+	Core::FileDropEvent event(std::move(filepaths));
+
+	Core::Application::Get()->OnEvent(event);
 }
 
 #pragma endregion
@@ -59,6 +75,7 @@ Platform::Window::Window(WindowParams& _params) : params(new WindowParams()), m_
 
 	glfwSetFramebufferSizeCallback(m_glfw_window, frame_buffer_size_callback);
 	glfwSetWindowCloseCallback(m_glfw_window, window_close_callback);
+	glfwSetDropCallback(m_glfw_window, drop_file_callback);
 
 	glfwSwapInterval(1);
 }
@@ -76,4 +93,9 @@ void Platform::Window::SwapBuffers()
 void Platform::Window::PollEvents()
 {
 	glfwPollEvents();
+}
+
+float Platform::Window::GetTime()
+{
+	return glfwGetTime() / 1000.0f;
 }

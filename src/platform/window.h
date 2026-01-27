@@ -29,6 +29,8 @@ public:
 	void SwapBuffers();
 	void PollEvents();
 
+	float GetTime(); 
+
 public:
 	WindowParams* params;
 
