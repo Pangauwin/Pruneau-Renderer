@@ -5,12 +5,14 @@
 
 #include "../platform/window.h"
 
+#include "level_manager.h"
 
 #include "layer.h"
 #include "../layers/engine_layer.h"
 #include "../renderer/renderer.h"
 
 static float dt = 0.00001f;
+static float time = 0.0f;
 
 static Core::Application* current_application;
 
@@ -26,6 +28,8 @@ Core::Application::Application(AppParams _params) :
 	m_app_should_close(false)
 {
 	current_application = this;
+
+	new LevelManager();
 
 	PushOverlay(m_engine_layer);
 }
@@ -48,23 +52,28 @@ void Core::Application::Run()
 		for (Layer* _layer : m_layer_stack)
 			_layer->OnUpdate(dt);
 
+		LevelManager::OnUpdate(dt);
+
 		m_renderer->PreRender();
+
+		LevelManager::OnRender();
 
 		for (Layer* _layer : m_layer_stack)
 			_layer->OnRender();
 
 		m_renderer->PostRender();
 
-
 		/*
 		TODO : For Game-Releases builds :
-			- Remove GUIRender (must be called only on editor engine, In-game UI will be openGL draws)
+			- Implement EditorRender() instead of rendering the editor during GUIRender()
 		*/
 
 		m_renderer->PreGUIRender();
 
 		for (Layer* _layer : m_layer_stack)
 			_layer->OnGUIRender();
+
+		LevelManager::OnGUIRender();
 
 		m_renderer->PostGUIRender();
 	}
@@ -125,11 +134,16 @@ void Core::Application::PollEvents()
 
 float Core::Application::CalculateDeltaTime()
 {
-	// TODO : Implement this
-	return 0.00001f;
+	float previous_time = time;
+	time = m_window.get()->GetTime();
+	dt = time - previous_time;
+	return dt;
 }
 
 void Core::Application::OnClose()
 {
-	//TODO : Call OnClose for all layers, close window, etc...
+	for (Layer* _layer : m_layer_stack)
+		_layer->OnDetach();
+
+	// TODO : destroy window
 }
