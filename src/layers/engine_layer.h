@@ -20,6 +20,8 @@ public:
 	void LogMessage(std::string _message);
 	// TODO : Create a clear function
 
+	// TODO : Create a editor layout contains the editor features (such as drop file in the OnEvent() function etc...)
+
 private:
 	std::vector<std::string> m_message_pool; // TODO : Create a message type in order to store more information about the message (error, warning, etc...)
 };
