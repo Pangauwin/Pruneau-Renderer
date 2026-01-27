@@ -4,13 +4,19 @@ namespace Core {
 
 enum class event_type {
 	event_type_none = 0,
+
 	event_type_window_close,
 	event_type_window_resize,
+
 	event_type_key_pressed,
 	event_type_key_released,
+
 	event_type_mouse_button_pressed,
 	event_type_mouse_button_released,
-	event_type_mouse_moved
+
+	event_type_mouse_moved,
+
+	event_type_file_dropped
 };
 
 enum event_category {
@@ -30,22 +36,10 @@ public:
 	virtual const char* GetName() const = 0;
 	virtual int GetCategoryFlags() const = 0;
 
-	bool IsInCategory(event_category _category)
+	bool IsInCategory(event_category _category) const
 	{
 		return GetCategoryFlags() & _category;
 	}
 };
-
-#pragma region Events
-class WindowCloseEvent : public Event
-{
-public:
-	static event_type GetStaticType() { return event_type::event_type_window_close; }
-	event_type GetEventType() const override { return GetStaticType(); }
-	const char* GetName() const override { return "WindowClose"; }
-	int GetCategoryFlags() const override { return event_category_application; }
-};
-
-#pragma endregion
 
 }
