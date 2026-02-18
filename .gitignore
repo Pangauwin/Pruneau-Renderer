@@ -10,4 +10,6 @@
 *.so
 *.a
 
+/ressources/models/
+
 TODO-list.txt
