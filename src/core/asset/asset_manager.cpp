@@ -69,6 +69,8 @@ void* Core::AssetManager::CreateModelData(std::string& _path)
 
 	ProcessNode(scene->mRootNode, scene, model);
 
+	model->SetShader(Renderer::default_shader);
+
 	return model;
 }
 

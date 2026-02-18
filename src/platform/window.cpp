@@ -7,6 +7,7 @@
 
 #include "../core/application.h"
 #include "core/event/events/file_drop.h"
+#include "core/event/events/mouse_button.h"
 
 #pragma region glfw_callbacks
 
@@ -36,6 +37,21 @@ static void drop_file_callback(GLFWwindow* window, int count, const char** paths
 	Core::Application::Get()->OnEvent(event);
 }
 
+static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	Core::MouseButtonEvent event(button, action, mods);
+	Core::Application::Get()->OnEvent(event);
+}
+
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	//TODO : implement
+}
+
+static void char_callback(GLFWwindow* window, unsigned int codepoint)
+{
+	//TODO : implement
+}
 #pragma endregion
 
 
@@ -76,6 +92,10 @@ Platform::Window::Window(WindowParams& _params) : params(new WindowParams()), m_
 	glfwSetFramebufferSizeCallback(m_glfw_window, frame_buffer_size_callback);
 	glfwSetWindowCloseCallback(m_glfw_window, window_close_callback);
 	glfwSetDropCallback(m_glfw_window, drop_file_callback);
+
+	glfwSetMouseButtonCallback(m_glfw_window, mouse_button_callback);
+	glfwSetKeyCallback(m_glfw_window, key_callback);
+	glfwSetCharCallback(m_glfw_window, char_callback);
 
 	glfwSwapInterval(1);
 }

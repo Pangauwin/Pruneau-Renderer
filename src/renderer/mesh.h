@@ -20,14 +20,13 @@ struct Vertex {
 class Mesh {
 public:
 	Mesh(std::vector<Vertex>& _vertices, std::vector<unsigned int>& _indices, std::vector<Texture*> _textures);
-
-	void AssignShader(Shader* _shader);
-
 	~Mesh();
-	void Draw();
 
-public:
-	Shader* shader;
+	static Mesh* CreateTriangle();
+	static Mesh* CreatePlane();
+	static Mesh* CreateCube();
+
+	void Draw();
 
 private:
 	std::vector<Vertex> m_vertices;

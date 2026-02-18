@@ -1,5 +1,11 @@
 #pragma once
 
+#include <unordered_map>
+#include <functional>
+#include <string>
+#include <typeindex>
+#include <memory>
+
 namespace Core {
 
 class Entity;
@@ -25,6 +31,51 @@ public:
 
 private:
 	Entity* m_owner;
+};
+
+struct ComponentInfo
+{
+	std::string name;
+	std::function<std::unique_ptr<Component>(Entity*)> factory;
+};
+
+struct ComponentRegistry
+{
+public:
+	static void Register(std::type_index type, ComponentInfo info)
+	{
+		Get()[type] = std::move(info);
+	}
+
+	static const auto& All()
+	{
+		return Get();
+	}
+
+private:
+	static std::unordered_map<std::type_index, ComponentInfo>& Get()
+	{
+		static std::unordered_map<std::type_index, ComponentInfo> map;
+		return map;
+	}
+};
+
+template<typename T>
+struct AutoRegisterComponent
+{
+	static void Register(const std::string& name)
+	{
+		ComponentRegistry::Register(
+			typeid(T),
+			ComponentInfo{
+				name,
+				[](Entity* owner)
+				{
+					return std::make_unique<T>(owner);
+				}
+			}
+		);
+	}
 };
 
 }

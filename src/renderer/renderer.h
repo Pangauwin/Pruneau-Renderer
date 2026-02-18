@@ -3,6 +3,8 @@
 #include "../platform/window.h"
 #include "frame_buffer.h"
 
+#include "shader.h"
+
 #include "core/components/model_renderer.h"
 #include "core/components/camera.h"
 
@@ -47,14 +49,18 @@ private:
 	void PreGUIRender();
 	void PostGUIRender();
 
-private:
-	Platform::Window* m_window;
+public:
+	std::vector<Core::Camera*> m_cameras;
+	unsigned int m_camera_index;
 	Framebuffer m_frame_buffer;
 
-	std::vector<Core::ModelRenderer*> m_render_pool;
-	std::vector<Core::Camera*> m_cameras;
 
-	unsigned int m_camera_index;
+
+private:
+	Platform::Window* m_window;
+	std::vector<Core::ModelRenderer*> m_render_pool;
+
 };
 
+extern Shader* default_shader;
 }

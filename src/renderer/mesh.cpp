@@ -7,7 +7,6 @@
 Renderer::Mesh::Mesh(std::vector<Vertex>& _vertices, std::vector<unsigned int>& _indices, std::vector<Renderer::Texture*> _textures):
 	m_vertices(_vertices), m_indices(_indices), m_textures(_textures)
 {
-
 #pragma region OpenGL
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -36,11 +35,6 @@ Renderer::Mesh::Mesh(std::vector<Vertex>& _vertices, std::vector<unsigned int>& 
 
 }
 
-void Renderer::Mesh::AssignShader(Shader* _shader)
-{
-    shader = _shader;
-}
-
 Renderer::Mesh::~Mesh()
 {
     glDeleteBuffers(1, &EBO);
@@ -48,47 +42,102 @@ Renderer::Mesh::~Mesh()
     glDeleteVertexArrays(1, &VAO);
 }
 
+Renderer::Mesh* Renderer::Mesh::CreateTriangle()
+{
+    std::vector<Renderer::Vertex> vertices = {
+        { { 0.0f,  0.5f, 0.0f }, {0,0,1}, {0.5f,1.0f} },
+        { {-0.5f, -0.5f, 0.0f }, {0,0,1}, {0.0f,0.0f} },
+        { { 0.5f, -0.5f, 0.0f }, {0,0,1}, {1.0f,0.0f} }
+    };
+
+    std::vector<unsigned int> indices = {
+        0, 1, 2
+    };
+
+    std::vector<Texture*> textures;
+
+    return new Renderer::Mesh(vertices, indices, textures);
+}
+
+Renderer::Mesh* Renderer::Mesh::CreatePlane()
+{
+    std::vector<Renderer::Vertex> vertices = {
+        { {-0.5f, 0.0f, -0.5f}, {0,1,0}, {0,0} },
+        { { 0.5f, 0.0f, -0.5f}, {0,1,0}, {1,0} },
+        { { 0.5f, 0.0f,  0.5f}, {0,1,0}, {1,1} },
+        { {-0.5f, 0.0f,  0.5f}, {0,1,0}, {0,1} }
+    };
+
+    std::vector<unsigned int> indices = {
+        0, 1, 2,
+        2, 3, 0
+    };
+
+    std::vector<Texture*> textures;
+
+    return new Renderer::Mesh(vertices, indices, textures);
+}
+
+Renderer::Mesh* Renderer::Mesh::CreateCube()
+{
+
+    std::vector<Renderer::Vertex> vertices = {
+        // Front
+        {{-0.5f,-0.5f, 0.5f},{0,0,1},{0,0}},
+        {{ 0.5f,-0.5f, 0.5f},{0,0,1},{1,0}},
+        {{ 0.5f, 0.5f, 0.5f},{0,0,1},{1,1}},
+        {{-0.5f, 0.5f, 0.5f},{0,0,1},{0,1}},
+
+        // Back
+        {{ 0.5f,-0.5f,-0.5f},{0,0,-1},{0,0}},
+        {{-0.5f,-0.5f,-0.5f},{0,0,-1},{1,0}},
+        {{-0.5f, 0.5f,-0.5f},{0,0,-1},{1,1}},
+        {{ 0.5f, 0.5f,-0.5f},{0,0,-1},{0,1}},
+
+        // Left
+        {{-0.5f,-0.5f,-0.5f},{-1,0,0},{0,0}},
+        {{-0.5f,-0.5f, 0.5f},{-1,0,0},{1,0}},
+        {{-0.5f, 0.5f, 0.5f},{-1,0,0},{1,1}},
+        {{-0.5f, 0.5f,-0.5f},{-1,0,0},{0,1}},
+
+        // Right
+        {{ 0.5f,-0.5f, 0.5f},{1,0,0},{0,0}},
+        {{ 0.5f,-0.5f,-0.5f},{1,0,0},{1,0}},
+        {{ 0.5f, 0.5f,-0.5f},{1,0,0},{1,1}},
+        {{ 0.5f, 0.5f, 0.5f},{1,0,0},{0,1}},
+
+        // Top
+        {{-0.5f, 0.5f, 0.5f},{0,1,0},{0,0}},
+        {{ 0.5f, 0.5f, 0.5f},{0,1,0},{1,0}},
+        {{ 0.5f, 0.5f,-0.5f},{0,1,0},{1,1}},
+        {{-0.5f, 0.5f,-0.5f},{0,1,0},{0,1}},
+
+        // Bottom
+        {{-0.5f,-0.5f,-0.5f},{0,-1,0},{0,0}},
+        {{ 0.5f,-0.5f,-0.5f},{0,-1,0},{1,0}},
+        {{ 0.5f,-0.5f, 0.5f},{0,-1,0},{1,1}},
+        {{-0.5f,-0.5f, 0.5f},{0,-1,0},{0,1}},
+    };
+
+    std::vector<unsigned int> indices = {
+        0,1,2, 2,3,0,       // Front
+        4,5,6, 6,7,4,       // Back
+        8,9,10, 10,11,8,    // Left
+        12,13,14, 14,15,12, // Right
+        16,17,18, 18,19,16, // Top
+        20,21,22, 22,23,20  // Bottom
+    };
+
+    std::vector<Texture*> textures;
+
+    return new Renderer::Mesh(vertices, indices, textures);
+}
+
 void Renderer::Mesh::Draw()
 {
-    if (shader == nullptr) return;
+    //shader->Use(); //TODO : Fix that and get the textures working
 
-    unsigned int diffuse_nb = 0;
-    unsigned int specular_nb = 0;
-    shader->Use();
-
-    for (unsigned int i = 0; i < m_textures.size(); i++)
-    {
-        glActiveTexture(GL_TEXTURE0 + i);
-
-        /*
-        For this part of code, we are assuming that the textures in the shader file are written like so :
-        uniform sampler2D texture_diffuse_1;
-        uniform sampler2D texture_diffuse_2;
-        uniform sampler2D texture_diffuse_3;
-        ...
-        uniform sampler2D texture_normal_1;
-        uniform sampler2D texture_normal_2;
-        uniform sampler2D texture_normal_3;
-        ...
-        */
-        std::string name;
-        switch (m_textures[i]->type)
-        {
-        case TEXTURE_TYPE_DIFFUSE:
-            diffuse_nb++;
-            name = "texture_diffuse_" + std::to_string(diffuse_nb);
-            break;
-        case TEXTURE_TYPE_NORMAL_MAP:
-            specular_nb++;
-            name = "texture_normal_" + std::to_string(specular_nb);
-            break;
-        default:
-            break;
-        }
-
-        shader->SetInt(name.c_str(), i);
-        glBindTexture(GL_TEXTURE_2D, m_textures[i]->GetID());
-    }
+    /**/
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);

@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "../core/application.h"
+#include "renderer/renderer.h"
 #include "../core/event/event_dispatcher.h"
 
 #include "core/event/events/file_drop.h"
@@ -12,6 +13,11 @@
 #include "core/asset/asset_manager.h"
 
 #include "core/level_manager.h"
+
+#include <imgui.h>
+#include <ImGuizmo.h>
+#include <imgui_internal.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #define CONSOLE_COMMAND_MAX_SIZE 512
 
@@ -21,7 +27,12 @@ static ImTextureID file_icon = 0;
 
 static Core::Entity* selected_entity = nullptr;
 
+static bool show_add_component_window = false;
+
 static void DrawEntityNode(Core::Entity* _entity);
+
+static ImGuizmo::OPERATION imguizmo_operation(ImGuizmo::TRANSLATE);
+static ImGuizmo::MODE imguizmo_mode(ImGuizmo::LOCAL);
 
 void EngineLayer::EngineLayer::OnAttach()
 {
@@ -30,6 +41,9 @@ void EngineLayer::EngineLayer::OnAttach()
 
 void EngineLayer::EngineLayer::OnGUIRender()
 {
+    Core::Level* _level = Core::LevelManager::GetCurrentLevel();
+
+
 #pragma region Dockspace
     static bool dockspaceOpen = true;
     static bool optFullscreen = true;
@@ -136,8 +150,11 @@ void EngineLayer::EngineLayer::OnGUIRender()
     {
         if (ImGui::Button(_asset->name.c_str(), ImVec2(64, 64)))
         {
-            // File clicked
-            LogMessage("DID YOU CLICK ME LA OH !!!");
+            if (_asset->type == Core::ASSET_TYPE_MODEL)
+            {
+                Core::Entity* _ent = _level->CreateEntity("Model", nullptr);
+                _ent->AddComponent<Core::ModelRenderer>((Renderer::Model*)_asset->data);
+            }
         }
 
         /*if (ImGui::ImageButton(_asset->name.c_str(), file_icon, ImVec2(64, 64), ImVec2(0, 0), ImVec2(1, 1)))
@@ -156,13 +173,11 @@ void EngineLayer::EngineLayer::OnGUIRender()
 #pragma region LevelInspector
     ImGui::Begin("Level Inspector");
 
-    Core::Level* _level = Core::LevelManager::GetCurrentLevel();
-
     if (ImGui::BeginPopupContextWindow())
     {
         if (ImGui::Button("Add Entity"))
         {
-            _level->CreateEntity("Entity", nullptr); // TODO : fix (broken)
+            _level->CreateEntity("Entity", nullptr);
             ImGui::CloseCurrentPopup();
         }
 
@@ -206,7 +221,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
             std::string result = comp_name.substr(comp_name.find_last_of(":") + 1);
 
-            ImGui::BeginChild(result.c_str());
+            ImGui::BeginGroup();
 
             bool enabled = true; // TODO : Implement Component enable
             ImGui::Checkbox("##enabled", &enabled);
@@ -218,18 +233,171 @@ void EngineLayer::EngineLayer::OnGUIRender()
                 i.second.get()->OnEditorRender();
             }
             
-            ImGui::EndChild();
+            ImGui::EndGroup();
         }
-        // TODO : same here
-        if (ImGui::BeginPopupContextWindow())
+        
+        if (ImGui::Button("Add Component"))
+            ImGui::OpenPopup("AddComponentPopup");
+
+        if (ImGui::BeginPopup("AddComponentPopup"))
         {
-            ImGui::Button("Add Component");
+            for (const auto& [type, info] : Core::ComponentRegistry::All())
+            {
+                if (ImGui::MenuItem(info.name.c_str()) && !(selected_entity->components[type]))
+                {
+                    selected_entity->components[type] = info.factory(selected_entity);
+                    ImGui::CloseCurrentPopup();
+                }
+            }
 
             ImGui::EndPopup();
         }
+
     }
 
     ImGui::End();
+#pragma endregion
+
+#pragma region Scene
+    ImGui::Begin("Scene", (bool*)0);
+
+#pragma region Toolbar
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.4f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 4.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 4));
+
+    ImGui::BeginChild("##SceneToolbar",
+        ImVec2(220, 40),
+        false,
+        ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoScrollWithMouse 
+    );
+
+    if (ImGui::Button("T"))
+        imguizmo_operation = ImGuizmo::TRANSLATE;
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("R"))
+        imguizmo_operation = ImGuizmo::ROTATE;
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("S"))
+        imguizmo_operation = ImGuizmo::SCALE;
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Local"))
+        imguizmo_mode = ImGuizmo::LOCAL;
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("World"))
+        imguizmo_mode = ImGuizmo::WORLD;
+
+    ImGui::EndChild();
+
+    ImGui::PopStyleVar(2);
+    ImGui::PopStyleColor();
+#pragma endregion
+
+    Renderer::Renderer* _current_renderer = Renderer::Renderer::Get();
+    Renderer::Framebuffer* _framebuffer = &_current_renderer->m_frame_buffer;
+
+    if (_current_renderer->m_cameras.size() == 0 || _current_renderer->m_camera_index >= _current_renderer->m_cameras.size())
+        ImGui::Text("INFO : No camera is rendering");
+
+    ImVec2 viewport_size = ImGui::GetContentRegionAvail();
+
+    if (viewport_size.x > 0 && viewport_size.y > 0)
+    {
+        if ((uint32_t)viewport_size.x != _framebuffer->width || (uint32_t)viewport_size.y != _framebuffer->height) // TODO : Remove this and store width and height in the renderer
+        {
+            //TODO : Once width and height are in the renderer, save it here too
+            _framebuffer->Resize((uint32_t)viewport_size.x, (uint32_t)viewport_size.y);
+            for (auto& camera : _current_renderer->m_cameras)
+            {
+                camera->SetAspect((float)viewport_size.x / (float)viewport_size.y);
+            }
+        }
+        ImGui::Image(
+            (void*)(intptr_t)_framebuffer->GetColorAttachmentRendererID(),
+            viewport_size,
+            ImVec2(0, 1),
+            ImVec2(1, 0)
+        );
+
+        ImVec2 imageMin = ImGui::GetItemRectMin();
+        ImVec2 imageMax = ImGui::GetItemRectMax();
+        ImVec2 imageSize = ImVec2(imageMax.x - imageMin.x, imageMax.y - imageMin.y);
+
+#pragma region Guizmo
+        ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
+        
+        //TODO : deal with that (I don't know how exactly but still it works
+        //ImGuizmo::SetOrthographic(false);
+
+        ImGuizmo::SetRect(
+            imageMin.x,
+            imageMin.y,
+            imageSize.x,
+            imageSize.y
+        );
+
+        std::vector<Core::Camera*> cameras = Core::Application::Get()->m_renderer.get()->m_cameras;
+        int camera_index = Core::Application::Get()->m_renderer.get()->m_camera_index;
+
+        if (selected_entity && cameras.size() != 0 && selected_entity != cameras[camera_index]->GetOwner())
+        {
+            if (camera_index >= cameras.size())
+            {
+                //TODO : Log error
+            }
+
+            Core::Transform* camera_transform = cameras[camera_index]->GetOwner()->GetComponent<Core::Transform>();
+            glm::mat4* projection = cameras[camera_index]->GetPerspective();
+
+            Core::Transform* transform =
+                selected_entity->GetComponent<Core::Transform>();
+
+            glm::mat4 world = transform->GetWorldTransformMatrix();
+
+            glm::mat4 view =
+                glm::inverse(camera_transform->GetWorldTransformMatrix());
+
+            ImGuizmo::Manipulate(
+                glm::value_ptr(view),
+                glm::value_ptr(*projection),
+                imguizmo_operation,
+                imguizmo_mode,
+                glm::value_ptr(world)
+            );
+
+            if (ImGuizmo::IsUsing())
+            {
+                glm::vec3 translation, rotation, scale;
+
+                ImGuizmo::DecomposeMatrixToComponents(
+                    glm::value_ptr(world),
+                    glm::value_ptr(translation),
+                    glm::value_ptr(rotation),
+                    glm::value_ptr(scale)
+                );
+
+                glm::vec3 radians = glm::radians(rotation);
+                glm::quat quat = glm::quat(radians);
+
+                transform->SetPosition(translation);
+                transform->SetRotation(quat);
+                transform->SetScale(scale);
+            }
+        }
+#pragma endregion
+    }
+
+    ImGui::End();
+
 #pragma endregion
 }
 
@@ -263,11 +431,18 @@ void EngineLayer::EngineLayer::OnEvent(Core::Event& _event)
     // We should also modify the condition as we want input inside the scene window (holding the framebuffer)
 	if (_event.IsInCategory(Core::event_category_input))
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		_event.handled |= io.WantCaptureKeyboard || io.WantCaptureMouse;
-
-        if (_event.handled)
+        if (ImGuizmo::IsUsing())
+        {
+            _event.handled = true;
             return;
+        }
+
+		ImGuiIO& io = ImGui::GetIO();
+        if (io.WantCaptureKeyboard || io.WantCaptureMouse)
+        {
+            _event.handled = true;  // Block input if ImGui is capturing it
+            return;
+        }
 	}
 }
 

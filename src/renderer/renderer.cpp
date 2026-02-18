@@ -11,12 +11,18 @@
 
 #include "frame_buffer.h"
 
+#include "core/application.h"
+
 #include <algorithm>
 
 #include "core/entity.h"
 
+#include "draw_test_cube.h" // TODO : clean test
+#include <ImGuizmo.h>
+
 static Renderer::Renderer* _current_renderer = nullptr;
-static bool _camera_binded = true;
+
+Renderer::Shader* Renderer::default_shader = nullptr;
 
 Renderer::Renderer::Renderer(Platform::Window* _window) : 
 	m_window(_window), m_frame_buffer(Framebuffer(0, 0)), m_camera_index(0)
@@ -45,6 +51,14 @@ Renderer::Renderer::Renderer(Platform::Window* _window) :
 	ImGui_ImplOpenGL3_Init("#version 460");
 
 	glEnable(GL_DEPTH_TEST);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	default_shader = new Shader(
+		"C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\vertex_shader.glsl",
+		"C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\fragment_shader.glsl"
+	);;
 
 	_current_renderer = this;
 }
@@ -82,8 +96,15 @@ void Renderer::Renderer::PreRender()
 {
 	m_frame_buffer.Bind();
 
-	glClearColor(0.f, 0.f, 0.5f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	if (m_cameras.size() != 0) {
+		glClearColor(0.f, 0.f, 0.5f, 1.0f);
+	}
+	else
+	{
+		glClearColor(1.f, 0.f, 0.0f, 1.0f);
+	}
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::Renderer::PostRender()
@@ -106,29 +127,26 @@ void Renderer::Renderer::PostRender()
 
 			for (Core::ModelRenderer* _model_renderer : m_render_pool)
 			{
-				Shader* _shader = _model_renderer->model->shader;
+				/*glm::mat4 mat = _model_renderer->GetOwner()->GetComponent<Core::Transform>()->GetWorldTransformMatrix();
+				Debug_DrawCubeToFramebuffer(mat,
+					view,
+					*perspective);*/ // TODO : clean test
+				Shader* _shader = _model_renderer->model->GetShader();
 				glm::mat4* _model = &_model_renderer->GetOwner()->GetComponent<Core::Transform>()->GetWorldTransformMatrix();
 
 				_shader->Use();
 				_shader->SetMat4("view", view);
-				_shader->SetMat4("perspective", *_model);
-				_shader->SetMat4("model", view);
+				_shader->SetMat4("perspective", *perspective);
+				_shader->SetMat4("model", *_model);
 				_shader->SetFloat("time", 0); // TODO : implement time module
 
 				_model_renderer->model->Draw();
 			}
+
+			//Core::LogMessage("GLError : " + std::to_string(glad_glGetError()));
+			//TODO : Actually display it in a window (stats window)
 		}
-
-		// TODO : check what is faster between that and just having _camera_binded = true, each frame
-		if(!_camera_binded)
-			_camera_binded = true;
 	}
-
-	else
-	{
-		_camera_binded = false;
-	}
-
 	m_frame_buffer.UnBind();
 }
 
@@ -137,34 +155,11 @@ void Renderer::Renderer::PreGUIRender()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+	ImGuizmo::BeginFrame();
 }
 
 void Renderer::Renderer::PostGUIRender()
 {
-	ImGui::Begin("Scene");
-
-	if (!_camera_binded)
-		ImGui::Text("INFO : No camera is rendering");
-
-	ImVec2 viewport_size = ImGui::GetContentRegionAvail();
-
-	if (viewport_size.x > 0 && viewport_size.y > 0)
-	{
-		if ((uint32_t)viewport_size.x != m_frame_buffer.m_width || (uint32_t)viewport_size.y != m_frame_buffer.m_height) // TODO : Remove this and store width and height in the renderer
-		{
-			//TODO : Once width and height are in the renderer, save it here too
-			m_frame_buffer.Resize((uint32_t)viewport_size.x, (uint32_t)viewport_size.y);
-		}
-		ImGui::Image(
-			(void*)(intptr_t)m_frame_buffer.GetColorAttachmentRendererID(),
-			viewport_size,
-			ImVec2(0, 1),
-			ImVec2(1, 0)
-		);
-	}
-
-	ImGui::End();
-
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

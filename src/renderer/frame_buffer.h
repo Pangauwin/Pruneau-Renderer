@@ -22,13 +22,14 @@ public:
 private:
 	void Invalidate();
 
+public:
+	uint32_t width = 0;
+	uint32_t height = 0;
+
 private:
 	uint32_t m_renderer_id = 0;
 	uint32_t m_color_attachment = 0;
 	uint32_t m_depth_attachment = 0;
-	
-	uint32_t m_width = 0;
-	uint32_t m_height = 0;
 };
 
 }

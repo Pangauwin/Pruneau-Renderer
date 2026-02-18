@@ -43,9 +43,8 @@ void Core::Application::Run()
 {
 	while (!m_app_should_close)
 	{
-		m_window->SwapBuffers();
-
 		PollEvents();
+		m_window->SwapBuffers();
 
 		dt = CalculateDeltaTime();
 
@@ -75,7 +74,7 @@ void Core::Application::Run()
 
 		LevelManager::OnGUIRender();
 
-		m_renderer->PostGUIRender();
+		m_renderer->PostGUIRender(); // Call all the function for imgui to print correctly
 	}
 
 	OnClose();

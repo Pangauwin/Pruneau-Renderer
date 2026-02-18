@@ -3,6 +3,7 @@
 #include "../component.h"
 
 #include <glm/glm.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
 
 namespace Renderer
 {
@@ -18,8 +19,9 @@ enum CAMERA_TYPE
 	CAMERA_TYPE_ORTHOGRAPHIC
 };
 
-struct CameraData { 
+struct CameraData {
 	virtual ~CameraData() = default;
+	virtual CameraData* Clone() const = 0;
 };
 
 struct CameraPerspectiveData : public CameraData
@@ -28,6 +30,8 @@ struct CameraPerspectiveData : public CameraData
 	float aspect = 16.f / 9.f;
 	float near_plane = 0.1f;
 	float far_plane = 100.f;
+
+	CameraPerspectiveData* Clone() const override { return new CameraPerspectiveData(*this); }
 };
 
 struct CameraOrthographicData : public CameraData
@@ -36,6 +40,8 @@ struct CameraOrthographicData : public CameraData
 	float bottom = -50.f;
 	float left = -50.f;
 	float right = 50.f;
+
+	CameraOrthographicData* Clone() const override { return new CameraOrthographicData(*this); }
 };
 
 struct CameraConfig {
@@ -44,17 +50,33 @@ struct CameraConfig {
 
 	CameraConfig(CAMERA_TYPE _type, CameraData* _data) : type(_type), data(nullptr)
 	{
-		if (type == CAMERA_TYPE_PERSPECTIVE)
+		if (_data)
 		{
-			data = new CameraPerspectiveData();
+			data = _data->Clone();
 		}
-
 		else
 		{
-			data = new CameraOrthographicData();
+			if (type == CAMERA_TYPE_PERSPECTIVE)
+				data = new CameraPerspectiveData();
+			else
+				data = new CameraOrthographicData();
 		}
+	}
 
-		*data = *_data;
+	// copy ctor
+	CameraConfig(const CameraConfig& other) : type(other.type), data(nullptr)
+	{
+		if (other.data) data = other.data->Clone();
+	}
+
+	// copy assign
+	CameraConfig& operator=(const CameraConfig& other)
+	{
+		if (this == &other) return *this;
+		type = other.type;
+		delete data;
+		data = other.data ? other.data->Clone() : nullptr;
+		return *this;
 	}
 
 	~CameraConfig()
@@ -63,16 +85,20 @@ struct CameraConfig {
 	}
 };
 
-class Camera : public Component
+class Camera : public Component, AutoRegisterComponent<Camera>
 {
 friend class Renderer::Renderer;
 
 public:
+	explicit Camera(Entity* owner); // Used by editor
+
 	Camera(Entity* _owner, CameraConfig& _camera_config);
+	~Camera();
 
 	void SetCameraConfig(CameraConfig& _camera_config);
+	void SetAspect(float _aspect);
 
-private:
+	void OnEditorRender();
 	glm::mat4* GetPerspective();
 
 private:

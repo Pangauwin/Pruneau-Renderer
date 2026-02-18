@@ -8,7 +8,7 @@
 
 namespace Core
 {
-class Transform : public Component
+class Transform : public Component, AutoRegisterComponent<Transform>
 {
 public:
 	Transform(Entity* _owner, glm::vec3 _position = glm::vec3(), glm::quat _rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3 _scale = glm::vec3(1.0f, 1.0f, 1.0f));

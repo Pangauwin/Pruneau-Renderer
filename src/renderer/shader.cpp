@@ -68,7 +68,6 @@ Renderer::Shader::Shader(const char* _vertex_shader_path, const char* _fragment_
 	if (!success)
 	{
 		glGetShaderInfoLog(fragment_id, 512, NULL, info_log);
-		// TODO : Log error
 		glDeleteShader(vertex_id);
 		glDeleteShader(fragment_id);
 		return;
@@ -112,7 +111,6 @@ void Renderer::Shader::UnBind() const
 
 void Renderer::Shader::SetMat4(std::string _name, glm::mat4& _val)
 {
-	Use();
 	glUniformMatrix4fv(glGetUniformLocation(m_id, _name.c_str()), 1, GL_FALSE, glm::value_ptr(_val));
 }
 

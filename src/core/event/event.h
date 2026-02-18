@@ -11,8 +11,7 @@ enum class event_type {
 	event_type_key_pressed,
 	event_type_key_released,
 
-	event_type_mouse_button_pressed,
-	event_type_mouse_button_released,
+	event_type_mouse_button,
 
 	event_type_mouse_moved,
 

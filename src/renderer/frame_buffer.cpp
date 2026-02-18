@@ -4,7 +4,7 @@
 
 #include "../core/application.h"
 
-Renderer::Framebuffer::Framebuffer(uint32_t _width, uint32_t _height) : m_width(_width), m_height(_height)
+Renderer::Framebuffer::Framebuffer(uint32_t _width, uint32_t _height) : width(_width), height(_height)
 {
 	Invalidate();
 }
@@ -19,7 +19,7 @@ Renderer::Framebuffer::~Framebuffer()
 void Renderer::Framebuffer::Bind()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_renderer_id);
-    glViewport(0, 0, m_width, m_height);
+    glViewport(0, 0, width, height);
 }
 
 void Renderer::Framebuffer::UnBind()
@@ -32,15 +32,15 @@ void Renderer::Framebuffer::UnBind()
 void Renderer::Framebuffer::Resize(uint32_t _width, uint32_t _height)
 {
     if (_width == 0 || _height == 0) return;
-    m_width = _width;
-    m_height = _height;
+    width = _width;
+    height = _height;
 
     Invalidate();
 }
 
 void Renderer::Framebuffer::Invalidate()
 {
-    if (m_width == 0 || m_height == 0)
+    if (width == 0 || height == 0)
         return;
 
 	if (m_renderer_id)
@@ -55,7 +55,7 @@ void Renderer::Framebuffer::Invalidate()
 
     glGenTextures(1, &m_color_attachment);
     glBindTexture(GL_TEXTURE_2D, m_color_attachment);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -75,7 +75,7 @@ void Renderer::Framebuffer::Invalidate()
     glBindTexture(GL_TEXTURE_2D, m_depth_attachment);
     glTexImage2D(
         GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8,
-        m_width, m_height, 0,
+        width, height, 0,
         GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr
     );
 

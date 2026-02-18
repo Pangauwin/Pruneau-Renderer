@@ -5,6 +5,17 @@
 
 #include <imgui.h>
 
+
+namespace Core {
+
+    static bool registered = []()
+        {
+            AutoRegisterComponent<Transform>::Register("Transform");
+            return true;
+        }();
+
+}
+
 Core::Transform::Transform(Entity* _owner, glm::vec3 _position, glm::quat _rotation, glm::vec3 _scale) : 
     Component(_owner), m_world_transform(glm::mat4(1.0f)), m_parent(nullptr), m_updated(true), 
     m_forward(glm::vec3()), m_position(_position), m_right(glm::vec3()), m_rotation(_rotation), m_scale(_scale), m_up(glm::vec3())
@@ -127,10 +138,31 @@ glm::vec3 Core::Transform::GetRight() const
 
 void Core::Transform::OnEditorRender()
 {
-    ImGui::DragFloat3("Position", &m_position.x, 0.1f);
-    ImGui::DragFloat3("Scale", &m_scale.x, 0.1f);
+    bool update_matrix = false;
 
-    // TODO : Finish
+    if (ImGui::DragFloat3("Position", &m_position.x, 0.1f))
+    {
+        update_matrix = true;
+    }
+    if (ImGui::DragFloat3("Scale", &m_scale.x, 0.1f))
+    {
+        update_matrix = true;
+    }
+
+    glm::vec3 euler = glm::degrees(glm::eulerAngles(m_rotation));
+
+    if(ImGui::DragFloat3("Rotation", &euler.x, 0.1f))
+    {
+        glm::vec3 radians = glm::radians(euler);
+        m_rotation = glm::quat(radians);
+
+        update_matrix = true;
+    }
+
+    if (update_matrix)
+    {
+        UpdateMatrix();
+    }
 }
 
 #pragma endregion
@@ -172,4 +204,4 @@ Core::Transform* Core::Transform::RegisterChild(Core::Transform* _child)
 void Core::Transform::UnRegisterChild(Core::Transform* _child)
 {
     m_children.erase(find(m_children.begin(), m_children.end(), _child));
-}
+} 

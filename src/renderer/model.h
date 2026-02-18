@@ -4,10 +4,6 @@
 #include "mesh.h"
 #include "texture.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
 #include <string>
 #include <vector>
 
@@ -25,20 +21,23 @@ class Model
 
 public:
 	Model();
+	Model(Shader* _shader);
+	Model(Shader* _shader, std::vector<Texture*>& _textures);
 	~Model();
-	//TODO : Work on an asset importer instead of calling assimp for 3d models
 
 	void Draw();
-
-public:
-	Shader* shader;
+	void SetShader(Shader* _shader);
+	Shader* GetShader();
 
 private:
+	Shader* shader = nullptr;
 
+private:
 	std::vector<Mesh*> m_meshes;
 	std::string directory;
 
 	std::vector<Shader*> m_shaders;
+	std::vector<Texture*> m_textures;
 };
 
 }
