@@ -31,12 +31,13 @@ A huge thanks to all the developers of the librairies used in this project :
 - C++17 compatible compiler
 - [CMake](https://cmake.org/) (>=3.16)
 - [OpenGL](https://www.opengl.org/) (>=4.6)
-- Git in order to clone the repo
+- Git (in order to clone the repo and the submodules)
 
 ### Build Instructions
 
 #### WARNING #1 : This project only builds on Windows for now (Linux support is coming, but not for now)
 #### WARNING #2 : This is NOT a stable version, the project is still in development, expect crashes/non working features
+#### WARNING #3 : This project only works with Visual Studio 2026 and MSVC, don't expect it to work on other compilers
 
 1. Clone the repository:
     ```bash
