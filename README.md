@@ -8,7 +8,7 @@ A lightweight 3D renderer written in C++ with the goal of evolving into a full-f
 - **Windowing:** Managed using GLFW.
 - **GUI:** ImGui docking interface and ImGuizmo for manipulations.
 - **Math Library:** GLM for vector and matrix operations.
-- **Texture Loading:** Using `imstb`.
+- **Texture Loading:** Using imstb.
 - **Layer System:** Modular layer architecture for scenes, UI, and systems.
 - **Event System:** Centralized event handling for window events and input.
 - **Framebuffer Support:** Custom framebuffer class with color and depth attachments.
@@ -25,10 +25,11 @@ A lightweight 3D renderer written in C++ with the goal of evolving into a full-f
 - [ImGui](https://github.com/ocornut/imgui) (docking branch)
 - [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo)
 - [GLM](https://github.com/g-truc/glm)
+- [imstb](https://github.com/nothings/stb)
 
 ### Build Instructions
 
-#### WARNING ! This project only builds on Windows
+#### WARNING ! This project only builds on Windows for now
 
 1. Clone the repository:
     ```bash
@@ -55,4 +56,5 @@ A lightweight 3D renderer written in C++ with the goal of evolving into a full-f
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 
