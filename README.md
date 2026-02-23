@@ -35,7 +35,8 @@ A huge thanks to all the developers of the librairies used in this project :
 
 ### Build Instructions
 
-#### WARNING ! This project only builds on Windows for now
+#### WARNING #1 : This project only builds on Windows for now (Linux support is coming, but not for now)
+#### WARNING #2 : This is NOT a stable version, the project is still in development, expect crashes/non working features
 
 1. Clone the repository:
     ```bash
@@ -62,6 +63,7 @@ A huge thanks to all the developers of the librairies used in this project :
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 
 
 
