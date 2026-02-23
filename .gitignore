@@ -3,6 +3,7 @@
 /.vscode/
 /.vs/
 /.idea/
+/.github/
 
 *.user
 *.exe
