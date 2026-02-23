@@ -20,12 +20,7 @@ A lightweight 3D renderer written in C++ with the goal of evolving into a full-f
 
 - C++17 compatible compiler
 - [CMake](https://cmake.org/) (>=3.16)
-- [GLFW](https://www.glfw.org/)
-- [GLAD](https://glad.dav1d.de/)
-- [ImGui](https://github.com/ocornut/imgui) (docking branch)
-- [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo)
-- [GLM](https://github.com/g-truc/glm)
-- [imstb](https://github.com/nothings/stb)
+- Git in order to clone the repo
 
 ### Build Instructions
 
@@ -33,7 +28,7 @@ A lightweight 3D renderer written in C++ with the goal of evolving into a full-f
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/Pangauwin/Pruneau-Renderer.git
+    git clone https://github.com/Pangauwin/Pruneau-Renderer.git --recurse-submodules
     cd Pruneau-Renderer
     ```
 
@@ -56,5 +51,6 @@ A lightweight 3D renderer written in C++ with the goal of evolving into a full-f
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 
 
