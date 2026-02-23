@@ -17,6 +17,7 @@ In the future, I will setup a list of versions that supports security updates, o
 ## Reporting a Vulnerability
 
 In order to report a vulnerability, you want to :
+ - Open an Issue (select the bug template)
  - Indicate which version of the engine do you use
  - Which version of the librairies are you using
  - Which OS are you using
