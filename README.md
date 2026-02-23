@@ -1,6 +1,6 @@
 # Pruneau Renderer
 
-A lightweight 3D renderer written in C++ with the goal of evolving into a full-featured game engine.
+A lightweight 3D renderer written in C++ with the goal of evolving into a full-featured game engine. For now, no stable release is there, the product is still in development.
 
 ## Librairies Used
 
@@ -62,6 +62,7 @@ A huge thanks to all the developers of the librairies used in this project :
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 
 
 
