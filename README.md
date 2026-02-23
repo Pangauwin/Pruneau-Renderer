@@ -1,6 +1,16 @@
 # Pruneau Renderer
 
-A lightweight 3D renderer written in C++ with the goal of evolving into a full-featured game engine. This project uses modern OpenGL, GLFW, GLAD, ImGui, ImGuizmo, glm, and imstb for textures.
+A lightweight 3D renderer written in C++ with the goal of evolving into a full-featured game engine.
+
+## Librairies Used
+
+A huge thanks to all the developers of the librairies used in this project : 
+ - [GLFW](https://www.glfw.org/)
+ - [GLM](https://github.com/g-truc/glm)
+ - [GLAD](https://glad.dav1d.de/)
+ - [ImGui](https://github.com/ocornut/imgui)
+ - [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo)
+ - [stb](https://github.com/nothings/stb)
 
 ## Features
 
@@ -20,6 +30,7 @@ A lightweight 3D renderer written in C++ with the goal of evolving into a full-f
 
 - C++17 compatible compiler
 - [CMake](https://cmake.org/) (>=3.16)
+- [OpenGL](https://www.opengl.org/) (>=4.6)
 - Git in order to clone the repo
 
 ### Build Instructions
@@ -51,6 +62,7 @@ A lightweight 3D renderer written in C++ with the goal of evolving into a full-f
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 
 
 
