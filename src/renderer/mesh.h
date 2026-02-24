@@ -19,7 +19,7 @@ struct Vertex {
 
 class Mesh {
 public:
-	Mesh(std::vector<Vertex>& _vertices, std::vector<unsigned int>& _indices, std::vector<Texture*> _textures);
+	Mesh(std::vector<Vertex>& _vertices, std::vector<unsigned int>& _indices);
 	~Mesh();
 
 	static Mesh* CreateTriangle();
@@ -31,7 +31,6 @@ public:
 private:
 	std::vector<Vertex> m_vertices;
 	std::vector<unsigned int> m_indices;
-	std::vector<Texture*> m_textures;
 
 	unsigned int VAO, VBO, EBO;
 };

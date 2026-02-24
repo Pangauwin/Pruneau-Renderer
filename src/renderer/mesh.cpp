@@ -4,8 +4,8 @@
 
 #include <glad/glad.h>
 
-Renderer::Mesh::Mesh(std::vector<Vertex>& _vertices, std::vector<unsigned int>& _indices, std::vector<Renderer::Texture*> _textures):
-	m_vertices(_vertices), m_indices(_indices), m_textures(_textures)
+Renderer::Mesh::Mesh(std::vector<Vertex>& _vertices, std::vector<unsigned int>& _indices):
+	m_vertices(_vertices), m_indices(_indices)
 {
 #pragma region OpenGL
 	glGenVertexArrays(1, &VAO);
@@ -135,10 +135,6 @@ Renderer::Mesh* Renderer::Mesh::CreateCube()
 
 void Renderer::Mesh::Draw()
 {
-    //shader->Use(); //TODO : Fix that and get the textures working
-
-    /**/
-
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);

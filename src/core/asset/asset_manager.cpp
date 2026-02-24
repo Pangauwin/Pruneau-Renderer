@@ -3,6 +3,8 @@
 #include <string>
 
 #include "renderer/model.h"
+#include "renderer/texture.h"
+#include "renderer/shader.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -12,7 +14,9 @@
 
 Core::AssetManager* instance = nullptr;
 
-std::vector<Renderer::Texture*> loaded_textures;
+/*
+TODO: Create import failed states and warnings on import
+*/
 
 Core::AssetManager::AssetManager()
 {
@@ -38,10 +42,67 @@ Core::Asset* Core::AssetManager::ImportAsset(const char* file_path)
 		_asset->path = path;
 		_asset->data = instance->CreateModelData(path);
 
-		// TODO : Create failed states
+		if (!_asset->data)
+		{
+			Core::LogMessage("Could not import asset: " + path);
+			delete _asset;
+			return nullptr;
+		}
+
 		Get()->m_assets.push_back(_asset);
 
 		return _asset;
+	}
+
+	else if (extension == "png")
+	{
+		std::string name = path;
+
+		Asset* _asset = new Asset();
+		_asset->name = name.erase(0, name.find_last_of("/") + 1).erase(0, name.find_last_of("\\") + 1).erase(name.find_last_of("."), name.length());
+		_asset->type = ASSET_TYPE_TEXTURE;
+		_asset->path = path;
+
+		_asset->data = instance->CreateTextureData(path);
+
+		if (!_asset->data)
+		{
+			Core::LogMessage("Could not import asset: " + path);
+			delete _asset;
+			return nullptr;
+		}
+
+		Get()->m_assets.push_back(_asset);
+
+		return _asset;
+	}
+
+	else if (extension == "glsl")
+	{
+		std::string name = path;
+
+		Asset* _asset = new Asset();
+		_asset->name = name.erase(0, name.find_last_of("/") + 1).erase(0, name.find_last_of("\\") + 1).erase(name.find_last_of("."), name.length());
+		_asset->type = ASSET_TYPE_SHADER;
+		_asset->path = path;
+
+		_asset->data = instance->CreateTextureData(path);
+		if (!_asset->data)
+		{
+			Core::LogMessage("Could not import asset: " + path);
+			delete _asset;
+			return nullptr;
+		}
+
+		Get()->m_assets.push_back(_asset);
+
+		return _asset;
+	}
+
+	else
+	{
+		Core::LogMessage("Failed on import: unknown extension: " + extension);
+		Core::LogMessage("File path: " + (std::string)file_path);
 	}
 
 	return nullptr;
@@ -74,6 +135,40 @@ void* Core::AssetManager::CreateModelData(std::string& _path)
 	return model;
 }
 
+void* Core::AssetManager::CreateTextureData(std::string& _path)
+{
+	Renderer::Texture* _texture = new Renderer::Texture(_path.c_str());
+	return _texture;
+}
+
+void* Core::AssetManager::CreateShaderData(std::string& _path)
+{
+	std::string matching_path = GetMatchingShader(_path);
+	if (matching_path == "")
+		return nullptr;
+
+	if (IsVertShaderPath(_path))
+		return new Renderer::Shader(_path.c_str(), matching_path.c_str());
+	else
+		return new Renderer::Shader(matching_path.c_str(), _path.c_str());
+
+	return nullptr;
+}
+
+std::string Core::AssetManager::GetMatchingShader(std::string& path)
+{
+	const std::string frag_suffix = "_frag.glsl";
+	const std::string vert_suffix = "_vert.glsl";
+
+	if (IsVertShaderPath(path))
+		return path.substr(0, path.size() - vert_suffix.size()) + frag_suffix;
+
+	else
+		return path.substr(0, path.size() - frag_suffix.size()) + vert_suffix;
+	
+	return "";
+}
+
 void Core::AssetManager::ProcessNode(void* _node, const void* _scene, Renderer::Model* _model)
 {
 	aiNode* node = (aiNode*)_node;
@@ -98,7 +193,6 @@ Renderer::Mesh* Core::AssetManager::ProcessMesh(void* _mesh, const void* _scene)
 
 	std::vector<Renderer::Vertex> vertices;
 	std::vector<unsigned int> indices;
-	std::vector<Renderer::Texture*> textures;
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
@@ -121,46 +215,34 @@ Renderer::Mesh* Core::AssetManager::ProcessMesh(void* _mesh, const void* _scene)
 		}
 	}
 
+	// TODO : make this rework again (texture assigned to material on import)
 	if (mesh->mMaterialIndex >= 0)
 	{
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		aiTextureType* type = new aiTextureType();
-		(*type) = aiTextureType_DIFFUSE;
-		std::vector<Renderer::Texture*> diffuseMaps = LoadMaterialTextures(material, type, Renderer::TEXTURE_TYPE_DIFFUSE);
-		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-		(*type) = aiTextureType_SPECULAR;
-		std::vector<Renderer::Texture*> specularMaps = LoadMaterialTextures(material, type, Renderer::TEXTURE_TYPE_NORMAL_MAP);
-		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+		LoadMaterialTextures(material, (void*)aiTextureType_DIFFUSE, Renderer::TEXTURE_TYPE_DIFFUSE);
+		LoadMaterialTextures(material, (void*)aiTextureType_SPECULAR, Renderer::TEXTURE_TYPE_NORMAL_MAP);
 	}
 
-	return new Renderer::Mesh(vertices, indices, textures);
+	return new Renderer::Mesh(vertices, indices);
 }
 
-std::vector<Renderer::Texture*> Core::AssetManager::LoadMaterialTextures(void* _mat, void* _type, Renderer::TEXTURE_TYPE _type_name)
+void Core::AssetManager::LoadMaterialTextures(void* _mat, void* _type, Renderer::TEXTURE_TYPE _type_name)
 {
-	std::vector<Renderer::Texture*> textures;
 	aiMaterial* mat = (aiMaterial*)_mat;
 	aiTextureType type = *(aiTextureType*)_type;
+
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
-		aiString str;
-		mat->GetTexture(type, i, &str);
-		bool skip = false;
-		for (unsigned int j = 0; j < loaded_textures.size(); j++)
-		{
-			if (std::strcmp(loaded_textures[j]->path.data(), str.C_Str()) == 0)
-			{
-				textures.push_back(loaded_textures[j]);
-				skip = true;
-				break;
-			}
-		}
-		if (!skip)
-		{   // if texture hasn't been loaded already, load it
-			Renderer::Texture* texture = new Renderer::Texture(str.C_Str(), _type_name);
-			textures.push_back(texture);
-			loaded_textures.push_back(texture); // add to loaded textures
-		}
+		aiString _path;
+		mat->GetTexture(type, i, &_path);
+
+		ImportAsset(_path.C_Str());
 	}
-	return textures;
+}
+
+bool Core::AssetManager::IsVertShaderPath(std::string& path)
+{
+	const std::string vert_suffix = "_vert.glsl";
+
+	return path.size() >= vert_suffix.size() &&	path.compare(path.size() - vert_suffix.size(), vert_suffix.size(), vert_suffix) == 0;
 }
