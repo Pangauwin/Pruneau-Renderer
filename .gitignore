@@ -11,9 +11,8 @@
 *.so
 *.a
 
-/ressources/models/
+/ressources/models/*
 
 TODO-list.txt
 
-imgui.ini
 /ressources/imgui.ini
