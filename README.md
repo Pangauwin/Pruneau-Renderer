@@ -17,14 +17,14 @@ A huge thanks to all the developers of the librairies used in this project :
 - **OpenGL Rendering:** Core rendering functionality with support for framebuffers.
 - **Windowing:** Managed using GLFW.
 - **GUI:** ImGui docking interface and ImGuizmo for manipulations.
-- **Math Library:** GLM for vector and matrix operations.
-- **Texture Loading:** Using imstb.
 - **Layer System:** Modular layer architecture for scenes, UI, and systems.
 - **Event System:** Centralized event handling for window events and input.
 - **Framebuffer Support:** Custom framebuffer class with color and depth attachments.
 - **Scalable Design:** Initial support for 2D and 3D mesh rendering.
 
 ## Getting Started
+
+#### For now, editor code and engine code are in the same project. As the editor is only a layer of the executable, I am planning to separate the editor and the engine layer. In the future, the engine will be a lib file and the editor an application.
 
 ### Prerequisites
 
@@ -61,9 +61,14 @@ A huge thanks to all the developers of the librairies used in this project :
     cmake --build .
     ```
 
+## Prebuilt binairies
+Prebuilt binairies will arrive as soon as the first version (even if unstable) is released. As explained, it will first come on Windows and then on Linux.
+There will be one binary for each major version release.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 
 
 
