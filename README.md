@@ -26,6 +26,8 @@ A huge thanks to all the developers of the librairies used in this project :
 
 #### For now, editor code and engine code are in the same project. As the editor is only a layer of the executable, I am planning to separate the editor and the engine layer. In the future, the engine will be a lib file and the editor an application.
 
+#### A wiki is available 👉 [here](https://github.com/Pangauwin/Pruneau-Renderer/wiki) 👈
+
 ### Prerequisites
 
 - C++17 compatible compiler
@@ -68,6 +70,7 @@ There will be one binary for each major version release.
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 
 
 
