@@ -146,7 +146,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
     ImGui::BeginGroup();
 
-    for each(const Core::Asset * _asset in Core::AssetManager::GetAssets())
+    for(const Core::Asset * _asset : Core::AssetManager::GetAssets())
     {
         if (ImGui::Button(_asset->name.c_str(), ImVec2(64, 64)))
         {
@@ -156,12 +156,6 @@ void EngineLayer::EngineLayer::OnGUIRender()
                 _ent->AddComponent<Core::ModelRenderer>((Renderer::Model*)_asset->data);
             }
         }
-
-        /*if (ImGui::ImageButton(_asset->name.c_str(), file_icon, ImVec2(64, 64), ImVec2(0, 0), ImVec2(1, 1)))
-        {
-            // File clicked
-            LogMessage("DID YOU CLICK ME LA OH !!!");
-        }*/
     }
 
     ImGui::EndGroup();
@@ -414,13 +408,11 @@ void EngineLayer::EngineLayer::OnEvent(Core::Event& _event)
             {
                 std::filesystem::path p(path);
 
-                if (p.extension() == ".fbx")
-                {
-                    Core::AssetManager::ImportAsset(path.c_str());
-                    LogMessage("Asset imported : " + path);
-                }
-                else state = false;
+                Core::AssetManager::ImportAsset(path.c_str());
+                LogMessage("Asset imported : " + path);
             }
+
+            // TODO : Return false if import failed/pass to another layer
 
             return state;
         }
@@ -450,7 +442,6 @@ void EngineLayer::EngineLayer::LogMessage(std::string _message)
 {
     m_message_pool.push_back(_message);
 }
-
 
 static void DrawEntityNode(Core::Entity* _entity)
 {
