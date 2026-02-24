@@ -45,6 +45,7 @@ void Renderer::Model::Draw()
         uniform sampler2D texture_normal_3;
         ...
         */
+
         std::string name;
         switch (m_textures[i]->type)
         {
