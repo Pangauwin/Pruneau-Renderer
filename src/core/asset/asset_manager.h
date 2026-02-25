@@ -1,7 +1,8 @@
 #pragma once
 
 #include "asset.h"
-#include <renderer/model.h>
+
+#include <unordered_map>
 
 namespace Core {
 
@@ -10,9 +11,27 @@ namespace Core {
 class AssetManager
 {
 public:
-	AssetManager();
+	template<typename T>
+	static std::shared_ptr<T> GetAsset(AssetID _id);
 
-	static Asset* ImportAsset(const char* file_path);
+	static AssetID ImportAsset(const std::string& path); // TODO : separate asset importer (create AssetImporter class)
+
+	static void RemoveAsset(AssetID _id);
+
+private:
+	AssetManager() = default;
+
+#pragma region ModelLoading
+	static void ImportModel(std::string _path);
+
+	static std::weak_ptr<Core::Asset> Core::AssetManager::ProcessMesh(void* _mesh, const void* _scene);
+
+	static void ProcessNode(void* _node, const void* _scene, std::vector<std::weak_ptr<Core::Asset>>& _meshes);
+#pragma endregion
+
+	static std::unordered_map<AssetID, std::shared_ptr<Asset>> m_assets;
+
+	/*static Asset* ImportAsset(const char* file_path);
 	static std::vector<Asset*> GetAssets();
 
 	static AssetManager* Get();
@@ -34,7 +53,8 @@ private:
 	bool IsVertShaderPath(std::string& path);
 #pragma endregion
 
-	std::vector<Asset*> m_assets;
+	std::vector<Asset*> m_assets;*/
+	// TODO : Clean this old code
 };
 
 }
