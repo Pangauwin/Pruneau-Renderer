@@ -1,10 +1,9 @@
 #pragma once
 
 #include <vector>
-
+#include <memory>
 #include <glm/glm.hpp>
 
-#include "texture.h"
 #include "shader.h"
 
 namespace Renderer {
@@ -19,18 +18,22 @@ struct Vertex {
 
 class Mesh {
 public:
-	Mesh(std::vector<Vertex>& _vertices, std::vector<unsigned int>& _indices);
+	Mesh(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices, std::weak_ptr<Shader> _shader);
 	~Mesh();
 
-	static Mesh* CreateTriangle();
+	/*static Mesh* CreateTriangle();
 	static Mesh* CreatePlane();
-	static Mesh* CreateCube();
+	static Mesh* CreateCube();*/
+
+	// TODO : recreate these functions
 
 	void Draw();
 
 private:
 	std::vector<Vertex> m_vertices;
 	std::vector<unsigned int> m_indices;
+
+	std::weak_ptr<Shader> m_shader;
 
 	unsigned int VAO, VBO, EBO;
 };

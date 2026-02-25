@@ -1,33 +1,10 @@
 #include "model.h"
 
-#include <glad/glad.h>
-
-Renderer::Model::Model() : shader(nullptr)
-{
-
-}
-
-Renderer::Model::Model(Shader* _shader) : shader(_shader)
-{
-
-}
-
-Renderer::Model::Model(Shader* _shader, std::vector<Texture*>& _textures) : shader(_shader), m_textures(_textures)
-{
-
-}
-
-Renderer::Model::~Model()
-{
-	for (Mesh* mesh : m_meshes)
-	{
-		delete mesh;
-	}
-}
+Renderer::Model::Model(std::vector<std::weak_ptr<Mesh>> _meshes) : m_meshes(std::move(_meshes)) {}
 
 void Renderer::Model::Draw()
 {
-    unsigned int diffuse_nb = 0;
+    /*unsigned int diffuse_nb = 0;
     unsigned int normal_nb = 0;
 
     for (unsigned int i = 0; i < m_textures.size(); i++)
@@ -44,7 +21,7 @@ void Renderer::Model::Draw()
         uniform sampler2D texture_normal_2;
         uniform sampler2D texture_normal_3;
         ...
-        */
+        *//*
 
         std::string name;
         switch (m_textures[i]->type)
@@ -64,20 +41,16 @@ void Renderer::Model::Draw()
         shader->SetInt(name.c_str(), i);
         glBindTexture(GL_TEXTURE_2D, m_textures[i]->GetID());
     }
+    // TODO : continue the loop until maximum texture limit reached (in order to clear the previous ones)
+    */
 
+    // TODO : texture binding in shader->Use() method
 
-	for (Mesh* mesh : m_meshes)
+	for (std::weak_ptr<Mesh> mesh : m_meshes)
 	{
-		mesh->Draw();
+        if(mesh.lock())
+		    mesh.lock()->Draw();
+        // TODO : in case the mesh isn't valid, delete it from the model
+        // TODO : even better, store the mesh pointer inside a shared_ptr instead and the asset_manager can load/unload the mesh depending if it's needed or not
 	}
-}
-
-void Renderer::Model::SetShader(Shader* _shader)
-{
-	shader = _shader;
-}
-
-Renderer::Shader* Renderer::Model::GetShader()
-{
-	return shader;
 }

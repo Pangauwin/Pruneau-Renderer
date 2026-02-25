@@ -8,7 +8,7 @@ namespace Renderer {
 
 class Shader {
 public:
-	Shader(const char* _vertex_shader_path, const char* _fragment_shader_path);
+	Shader(const char* _vertex_shader_code, const char* _fragment_shader_code);
 	~Shader();
 
 	void Use() const;

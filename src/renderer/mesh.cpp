@@ -4,8 +4,8 @@
 
 #include <glad/glad.h>
 
-Renderer::Mesh::Mesh(std::vector<Vertex>& _vertices, std::vector<unsigned int>& _indices):
-	m_vertices(_vertices), m_indices(_indices)
+Renderer::Mesh::Mesh(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices, std::weak_ptr<Shader> _shader):
+	m_vertices(_vertices), m_indices(_indices), m_shader(_shader)
 {
 #pragma region OpenGL
 	glGenVertexArrays(1, &VAO);
@@ -41,7 +41,7 @@ Renderer::Mesh::~Mesh()
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
 }
-
+/*
 Renderer::Mesh* Renderer::Mesh::CreateTriangle()
 {
     std::vector<Renderer::Vertex> vertices = {
@@ -132,9 +132,17 @@ Renderer::Mesh* Renderer::Mesh::CreateCube()
 
     return new Renderer::Mesh(vertices, indices, textures);
 }
+*/
+
+// TODO : recreate the upper functions
 
 void Renderer::Mesh::Draw()
 {
+    if (m_shader.lock())
+        m_shader.lock()->Use();
+
+    // TODO : Create default shader when shader is not valid anymore
+
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);

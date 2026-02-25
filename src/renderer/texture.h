@@ -15,6 +15,7 @@ class Texture {
 public:
 	Texture(const char* _path);
 	Texture(const char* _path, TEXTURE_TYPE _type);
+	Texture(void* _data, int _width, int _height);
 
 	~Texture();
 	// TODO : implement texture class

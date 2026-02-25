@@ -1,46 +1,14 @@
 #include "shader.h"
 
-#include <fstream>
-#include <sstream>
-
 #include <glad/glad.h>
 
 #include <glm/gtc/type_ptr.hpp>
 
-Renderer::Shader::Shader(const char* _vertex_shader_path, const char* _fragment_shader_path) : m_id(0)
+Renderer::Shader::Shader(const char* _vertex_shader_code, const char* _fragment_shader_code) : m_id(0)
 {
-	std::string vertex_code_str, fragment_code_str;
-
-	std::ifstream vertex_shader_file, fragment_shader_file;
-
-	vertex_shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-	fragment_shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-	try {
-		vertex_shader_file.open(_vertex_shader_path);
-		fragment_shader_file.open(_fragment_shader_path);
-
-		std::stringstream vertex_shader_stream, fragment_shader_stream;
-
-		vertex_shader_stream << vertex_shader_file.rdbuf();
-		fragment_shader_stream << fragment_shader_file.rdbuf();
-
-		vertex_shader_file.close();
-		fragment_shader_file.close();
-
-		vertex_code_str = vertex_shader_stream.str();
-		fragment_code_str = fragment_shader_stream.str();
-	}
-
-	catch (std::ifstream::failure e)
-	{
-		// TODO : implement logger and log an error here
-
-		return;
-	}
-
-	const char* vertex_code = vertex_code_str.c_str();
-	const char* fragment_code = fragment_code_str.c_str();
+	//const char* vertex_code = vertex_code_str.c_str();
+	//const char* fragment_code = fragment_code_str.c_str();
+	//TODO : Clean this
 
 	unsigned int vertex_id, fragment_id;
 	int success;
@@ -48,7 +16,7 @@ Renderer::Shader::Shader(const char* _vertex_shader_path, const char* _fragment_
 	char info_log[512];
 
 	vertex_id = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_id, 1, &vertex_code, NULL);
+	glShaderSource(vertex_id, 1, &_vertex_shader_code, NULL);
 	glCompileShader(vertex_id);
 
 	glGetShaderiv(vertex_id, GL_COMPILE_STATUS, &success);
@@ -61,7 +29,7 @@ Renderer::Shader::Shader(const char* _vertex_shader_path, const char* _fragment_
 	}
 
 	fragment_id = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_id, 1, &fragment_code, NULL);
+	glShaderSource(fragment_id, 1, &_fragment_shader_code, NULL);
 	glCompileShader(fragment_id);
 
 	glGetShaderiv(fragment_id, GL_COMPILE_STATUS, &success);

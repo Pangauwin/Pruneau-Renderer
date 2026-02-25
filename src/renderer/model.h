@@ -2,10 +2,9 @@
 
 #include "shader.h"
 #include "mesh.h"
-#include "texture.h"
 
-#include <string>
 #include <vector>
+#include <memory>
 
 namespace Core
 {
@@ -20,24 +19,14 @@ class Model
 	friend class Core::AssetManager;
 
 public:
-	Model();
-	Model(Shader* _shader);
-	Model(Shader* _shader, std::vector<Texture*>& _textures);
-	~Model();
+	Model(std::vector<std::weak_ptr<Mesh>> _meshes);
+	~Model() = default;
 
 	void Draw();
-	void SetShader(Shader* _shader);
-	Shader* GetShader();
-
 private:
-	Shader* shader = nullptr;
+	std::vector<std::weak_ptr<Mesh>> m_meshes;
 
-private:
-	std::vector<Mesh*> m_meshes;
-	std::string directory;
-
-	std::vector<Shader*> m_shaders;
-	std::vector<Texture*> m_textures;
+	// Add the transform of the meshes present inside the model
 };
 
 }
