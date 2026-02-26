@@ -22,39 +22,35 @@ private:
 	AssetManager() = default;
 
 #pragma region ModelLoading
-	static void ImportModel(std::string _path);
+	static AssetID ImportModel(const std::string& _path);
 
-	static std::weak_ptr<Core::Asset> Core::AssetManager::ProcessMesh(void* _mesh, const void* _scene);
+	static std::weak_ptr<Asset> ProcessMesh(void* _mesh, const void* _scene);
 
 	static void ProcessNode(void* _node, const void* _scene, std::vector<std::weak_ptr<Core::Asset>>& _meshes);
 #pragma endregion
 
+#pragma region TextureLoading
+	static AssetID ImportTexture(const std::string& path);
+#pragma endregion
+	
+#pragma region ShaderLoading
+	static AssetID ImportShader(const std::string& path);
+#pragma endregion
+
 	static std::unordered_map<AssetID, std::shared_ptr<Asset>> m_assets;
 
-	/*static Asset* ImportAsset(const char* file_path);
-	static std::vector<Asset*> GetAssets();
-
-	static AssetManager* Get();
-
-private:
-	void* CreateModelData(std::string& _path);
-	void* CreateTextureData(std::string& _path);
-	void* CreateShaderData(std::string& _path);
-
-#pragma region ModelImport
-	void ProcessNode(void* _node, const void* _scene, Renderer::Model* _model);
-	Renderer::Mesh* ProcessMesh(void* _mesh, const void* _scene);
-
-	void LoadMaterialTextures(void* _mat, void* _type, Renderer::TEXTURE_TYPE _type_name);
-#pragma endregion
-
-#pragma region ShaderImport
-	std::string Core::AssetManager::GetMatchingShader(std::string& path);
-	bool IsVertShaderPath(std::string& path);
-#pragma endregion
-
-	std::vector<Asset*> m_assets;*/
-	// TODO : Clean this old code
+	static AssetID s_nextID;
 };
 
+}
+
+template<typename T>
+std::shared_ptr<T> Core::AssetManager::GetAsset(AssetID id)
+{
+	auto it = m_assets.find(id);
+
+	if (it == m_assets.end())
+		return nullptr;
+
+	return std::dynamic_pointer_cast<T>(it->second);
 }

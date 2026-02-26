@@ -2,51 +2,66 @@
 
 #include <string>
 
+#include <fstream>
+#include <sstream>
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 #include "core/application.h"
 
 #include "renderer/texture.h"
 
-static Core::AssetID nextID = 1;
-
 namespace Core {
 	std::unordered_map<AssetID, std::shared_ptr<Asset>> AssetManager::m_assets;
+	AssetID AssetManager::s_nextID = 1;
 }
 
 /*
 TODO: Create import failed states and warnings on import
 */
 
-template<typename T>
-std::shared_ptr<T> Core::AssetManager::GetAsset(AssetID id)
-{
-	auto it = m_assets.find(id);
-
-	if (it == m_assets.end())
-		return nullptr;
-
-	return std::dynamic_pointer_cast<T>(it->second);
-}
-
 Core::AssetID Core::AssetManager::ImportAsset(const std::string& path)
 {
+	AssetID id = 0;
+
 	if (EndsWith(path, ".obj") || EndsWith(path, ".fbx"))
 	{
-		ImportModel(std::move(path));
+		id = ImportModel(std::move(path));
 	}
 
-	nextID++;
+	else if (EndsWith(path, ".png") || EndsWith(path, ".jpg") || EndsWith(path, ".bmp"))
+	{
+		id = ImportTexture(std::move(path));
+	}
 
-	std::shared_ptr<Asset> _asset;
-	//TODO : assign the new asset inside _asset
+	else if (EndsWith(path, ".glsl"))
+	{
+		id = ImportShader(path);
+	}
 
-	return nextID;
+	else
+	{
+		Core::LogMessage("Asset format not handled:" + path);
+		return 0;
+	}
+
+	if (!id)
+		Core::LogMessage("Could not import asset:" + path);
+
+	return id;
 }
 
-void Core::AssetManager::ImportModel(std::string _path)
+void Core::AssetManager::RemoveAsset(AssetID _id)
+{
+	Core::AssetManager::m_assets.erase(_id);
+}
+
+Core::AssetID Core::AssetManager::ImportModel(const std::string& _path)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(_path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -55,7 +70,13 @@ void Core::AssetManager::ImportModel(std::string _path)
 
 	ProcessNode(scene->mRootNode, scene, _meshes);
 
-	//TODO #1 : apply the right shader to the model
+	s_nextID++;
+
+	Core::AssetManager::m_assets[s_nextID] = std::make_shared<ModelAsset>("Model_" + std::to_string(s_nextID), s_nextID, _meshes);
+
+	return s_nextID;
+
+	//TODO #1 : apply the right shader to the meshes
 	//TODO #2 : apply the right transform of the meshes (if that exists ?) inside the model
 	//TODO #3 : when all of that is done, create a model asset
 }
@@ -75,6 +96,80 @@ void Core::AssetManager::ProcessNode(void* _node, const void* _scene, std::vecto
 	{
 		ProcessNode(node->mChildren[i], scene, _meshes);
 	}
+}
+
+Core::AssetID Core::AssetManager::ImportTexture(const std::string& path)
+{
+	int width, height, channel_nb;
+	unsigned char* data = stbi_load(path.c_str(), &width, &height, &channel_nb, 4);
+
+	if (!data)
+	{
+		stbi_image_free(data);
+		return 0;
+	}
+
+	s_nextID++;
+	Core::AssetManager::m_assets[s_nextID] = std::make_shared<TextureAsset>("Texture_" + s_nextID, s_nextID, data, width, height);
+
+	stbi_image_free(data);
+
+	return s_nextID;
+}
+
+Core::AssetID Core::AssetManager::ImportShader(const std::string& path)
+{
+	std::string vertex_shader_file_path = path;
+	std::string fragment_shader_file_path = path;
+
+	if (EndsWith(path, "_vert.glsl"))
+	{
+		size_t pos = fragment_shader_file_path.rfind("_vert.glsl");
+		fragment_shader_file_path.replace(pos, 10, "_frag.glsl");
+	}
+
+	else if (EndsWith(path, "_frag.glsl"))
+	{
+		size_t pos = vertex_shader_file_path.rfind("_frag.glsl");
+		vertex_shader_file_path.replace(pos, 10, "_vert.glsl");
+	}
+
+	else
+	{
+		Core::LogMessage("Could not import Shader, make sure the filename ends with _vert.glsl or _frag.glsl (underscore included)");
+		return 0;
+	}
+
+	std::string vertex_shader, fragment_shader;
+
+	std::ifstream vertex_file(vertex_shader_file_path, std::ios::in | std::ios::binary);
+	std::ostringstream vertex_shader_contents;
+
+	if (!vertex_file)
+	{
+		Core::LogMessage("Failed to open the vertex shader file");
+		return 0;
+	}
+
+	vertex_shader_contents << vertex_file.rdbuf();
+	vertex_shader = vertex_shader_contents.str();
+
+	std::ifstream fragment_file(fragment_shader_file_path, std::ios::in | std::ios::binary);
+	std::ostringstream fragment_shader_contents;
+
+	if (!fragment_file)
+	{
+		Core::LogMessage("Failed to open the fragment shader file");
+		return 0;
+	}
+
+	fragment_shader_contents << fragment_file.rdbuf();
+	fragment_shader = fragment_shader_contents.str();
+
+	s_nextID++;
+	Core::AssetManager::m_assets[s_nextID] = std::make_shared<ShaderAsset>("Shader_" + std::to_string(s_nextID), s_nextID, vertex_shader.c_str(), fragment_shader.c_str());
+
+	return s_nextID;
 }
 
 std::weak_ptr<Core::Asset> Core::AssetManager::ProcessMesh(void* _mesh, const void* _scene)
@@ -114,10 +209,10 @@ std::weak_ptr<Core::Asset> Core::AssetManager::ProcessMesh(void* _mesh, const vo
 		LoadMaterialTextures(material, (void*)aiTextureType_SPECULAR, Renderer::TEXTURE_TYPE_NORMAL_MAP);
 	}
 
-	nextID++;
-	Core::AssetManager::m_assets[nextID] = std::make_shared<MeshAsset>("Mesh_" + std::to_string(nextID), nextID, vertices, indices);
+	s_nextID++;
+	Core::AssetManager::m_assets[s_nextID] = std::make_shared<MeshAsset>("Mesh_" + std::to_string(s_nextID), s_nextID, vertices, indices); // TODO : fix : add shader inside constructor
 
-	return Core::AssetManager::m_assets[nextID];
+	return Core::AssetManager::m_assets[s_nextID];
 }
 
 static void LoadMaterialTextures(void* _mat, void* _type, Renderer::TEXTURE_TYPE _type_name)
