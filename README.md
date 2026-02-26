@@ -1,10 +1,12 @@
 # Pruneau Renderer
 
-A lightweight 3D renderer written in C++ with the goal of evolving into a full-featured game engine. For now, no stable release is there, the product is still in development.
+<img width="1200" height="800" alt="pruneau2" src="https://github.com/user-attachments/assets/fa402cb6-286b-45e1-bab0-e29abebe0b37" />
+
+Pruneau Renderer is a lightweight 3D renderer written in C++ with the goal of evolving into a full-featured game engine. For now, no stable release is there, the product is still in development.
 
 ## Librairies Used
 
-A huge thanks to all the developers of the librairies used in this project : 
+First of all, I want to thanks all the developers of the librairies used in this project that makes it possible : 
  - [GLFW](https://www.glfw.org/)
  - [GLM](https://github.com/g-truc/glm)
  - [GLAD](https://glad.dav1d.de/)
@@ -26,7 +28,7 @@ A huge thanks to all the developers of the librairies used in this project :
 
 #### For now, editor code and engine code are in the same project. As the editor is only a layer of the executable, I am planning to separate the editor and the engine layer. In the future, the engine will be a lib file and the editor an application.
 
-#### A wiki is available 👉 [here](https://github.com/Pangauwin/Pruneau-Renderer/wiki) 👈
+#### A wiki is available 👉 [here](https://github.com/Pangauwin/Pruneau-Renderer/wiki) 👈 (still in development too)
 
 ### Prerequisites
 
@@ -70,6 +72,7 @@ There will be one binary for each major version release.
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 
 
 
