@@ -3,6 +3,8 @@
 #include <imgui.h>
 #include <string>
 #include <filesystem>
+#include <sstream>
+#include <iomanip>
 
 #include "../core/application.h"
 #include "renderer/renderer.h"
@@ -18,6 +20,8 @@
 #include <ImGuizmo.h>
 #include <imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
+
+#include "core/time.h"
 
 #define CONSOLE_COMMAND_MAX_SIZE 512
 
@@ -322,9 +326,26 @@ void EngineLayer::EngineLayer::OnGUIRender()
             ImVec2(1, 0)
         );
 
-        ImVec2 imageMin = ImGui::GetItemRectMin();
-        ImVec2 imageMax = ImGui::GetItemRectMax();
-        ImVec2 imageSize = ImVec2(imageMax.x - imageMin.x, imageMax.y - imageMin.y);
+        ImVec2 image_min = ImGui::GetItemRectMin();
+        ImVec2 image_max = ImGui::GetItemRectMax();
+        ImVec2 image_size = ImVec2(image_max.x - image_min.x, image_max.y - image_min.y);
+
+#pragma region StatsOverlay
+
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+        draw_list->AddRectFilled(image_min, ImVec2(image_min.x + 150, image_min.y + 60), IM_COL32(255, 255, 255, 40), 5.0f);
+
+        float readable_fps = Time::readable_fps;
+
+        std::ostringstream oss;
+
+        oss << std::fixed << std::setprecision(1) << readable_fps;
+
+        draw_list->AddText(ImVec2(image_min.x + 10, image_min.y + 10), IM_COL32(255, 255, 255, 255), std::string("FPS: " + oss.str()).c_str());
+        draw_list->AddText(ImVec2(image_min.x + 10, image_min.y + 30), IM_COL32(255, 255, 255, 255), std::string("glErrorCode: " + std::to_string(_framebuffer->gl_error)).c_str());
+
+#pragma endregion
 
 #pragma region Guizmo
         ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
@@ -333,10 +354,10 @@ void EngineLayer::EngineLayer::OnGUIRender()
         //ImGuizmo::SetOrthographic(false);
 
         ImGuizmo::SetRect(
-            imageMin.x,
-            imageMin.y,
-            imageSize.x,
-            imageSize.y
+            image_min.x,
+            image_min.y,
+            image_size.x,
+            image_size.y
         );
 
         std::vector<Core::Camera*> cameras = Core::Application::Get()->m_renderer.get()->m_cameras;
