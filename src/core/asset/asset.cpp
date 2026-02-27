@@ -1,12 +1,25 @@
 #include "asset.h"
+#include "asset_manager.h"
+
+#include "core/application.h"
 
 #pragma region MeshAsset
 
 #include "renderer/mesh.h"
 
 Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader, const glm::mat4& _transform) 
-	: Asset(std::move(_name), _id), m_mesh(std::make_unique<Renderer::Mesh>(vertices, indices, _shader.lock()->GetShader())), m_transform(_transform) {}
-// TODO : replace _shader.lock()->GetShader() by something safer (weak_ptr can be empty)
+	: Asset(std::move(_name), _id), m_transform(_transform) 
+{
+	if (_shader.lock())
+	{
+		m_mesh = std::make_unique<Renderer::Mesh>(vertices, indices, _shader.lock()->GetShader());
+	}
+	else
+	{
+		m_mesh = std::make_unique<Renderer::Mesh>(vertices, indices, Core::AssetManager::error_shader->GetShader());
+		Core::LogMessage("The shader assigned to the model, error shader assigned instead. ModelID:" + std::to_string(_id));
+	}
+}
 
 void Core::MeshAsset::Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective)
 {

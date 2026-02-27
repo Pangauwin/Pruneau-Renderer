@@ -25,12 +25,13 @@ namespace Core {
 }
 
 std::shared_ptr<Core::ShaderAsset> Core::AssetManager::default_shader;
+std::shared_ptr<Core::ShaderAsset> Core::AssetManager::error_shader;
 
 struct ParsedMesh {
 	std::vector<Renderer::Vertex> vertices;
 	std::vector<uint32_t> indices;
-	int materialIndex;
-	glm::mat4 transform;
+	int materialIndex = 0;
+	glm::mat4 transform = glm::mat4(1.0f);
 };
 
 struct ParsedMaterial
@@ -54,8 +55,11 @@ Core::AssetID Core::AssetManager::ImportAsset(const std::string& path)
 
 	if (!default_shader.get())
 	{
-		AssetID shaderID = ImportShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\default_vert.glsl");
-		default_shader = GetAsset<ShaderAsset>(shaderID);
+		AssetID shader_ID = ImportShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\default_vert.glsl");
+		default_shader = GetAsset<ShaderAsset>(shader_ID);
+
+		AssetID error_shader_ID = ImportShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\default_vert.glsl");
+		error_shader = GetAsset<ShaderAsset>(error_shader_ID);
 
 		//TODO : move this to the startup of the engine
 	}

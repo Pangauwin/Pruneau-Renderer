@@ -22,6 +22,10 @@ public:
 
 	static const std::unordered_map<AssetID, std::shared_ptr<Asset>>& GetAssets() { return m_assets; }
 
+	static std::shared_ptr<ShaderAsset> error_shader;
+	static std::shared_ptr<ShaderAsset> default_shader; // TODO : implement default_shader registering inside the assets pool
+	// TODO (better) : Add a default material instead of a default shader that holds everything (requires first material implementation)
+
 private:
 	AssetManager() = default;
 
@@ -42,9 +46,6 @@ private:
 	static std::unordered_map<AssetID, std::shared_ptr<Asset>> m_assets;
 
 	static AssetID s_nextID;
-
-	static std::shared_ptr<ShaderAsset> default_shader; // TODO : implement default_shader registering inside the assets pool
-	// TODO (better) : Add a default material instead of a default shader that holds everything (requires first material implementation)
 };
 
 }
