@@ -11,13 +11,10 @@
 
 #include "frame_buffer.h"
 
-#include "core/application.h"
-
 #include <algorithm>
 
 #include "core/entity.h"
 
-#include "draw_test_cube.h" // TODO : clean test
 #include <ImGuizmo.h>
 
 static Renderer::Renderer* _current_renderer = nullptr;
