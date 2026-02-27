@@ -7,6 +7,11 @@
 Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader, const glm::mat4& _transform) 
 	: Asset(std::move(_name), _id), m_mesh(std::make_unique<Renderer::Mesh>(vertices, indices, _shader.lock()->GetShader())), m_transform(_transform) {}
 // TODO : replace _shader.lock()->GetShader() by something safer (weak_ptr can be empty)
+
+void Core::MeshAsset::Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective)
+{
+	m_mesh->Draw(_view, _model, _perspective);
+}
 #pragma endregion
 
 #pragma region TextureAsset
@@ -31,7 +36,7 @@ Core::ShaderAsset::ShaderAsset(std::string _name, AssetID _id, const char* _vert
 
 #include "renderer/model.h"
 
-Core::ModelAsset::ModelAsset(std::string _name, AssetID _id, std::vector<std::weak_ptr<MeshAsset>> _meshes)
+Core::ModelAsset::ModelAsset(std::string _name, AssetID _id, std::vector<std::shared_ptr<MeshAsset>> _meshes)
 	: Asset(_name, _id), m_model(std::make_unique<Renderer::Model>(std::move(_meshes))) {}
 
 #pragma endregion

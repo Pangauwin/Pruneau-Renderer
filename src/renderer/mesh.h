@@ -27,7 +27,7 @@ public:
 
 	// TODO : recreate these functions
 
-	void Draw();
+	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
 
 private:
 	std::vector<Vertex> m_vertices;

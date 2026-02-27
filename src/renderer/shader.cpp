@@ -77,7 +77,7 @@ void Renderer::Shader::UnBind() const
 	glUseProgram(0);
 }
 
-void Renderer::Shader::SetMat4(std::string _name, glm::mat4& _val)
+void Renderer::Shader::SetMat4(std::string _name,const glm::mat4& _val)
 {
 	glUniformMatrix4fv(glGetUniformLocation(m_id, _name.c_str()), 1, GL_FALSE, glm::value_ptr(_val));
 }

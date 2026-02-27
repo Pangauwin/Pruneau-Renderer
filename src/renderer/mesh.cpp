@@ -136,10 +136,16 @@ Renderer::Mesh* Renderer::Mesh::CreateCube()
 
 // TODO : recreate the upper functions
 
-void Renderer::Mesh::Draw()
+void Renderer::Mesh::Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective)
 {
     if (m_shader.lock())
+    {
         m_shader.lock()->Use();
+        m_shader.lock()->SetMat4("view", _view);
+        m_shader.lock()->SetMat4("model", _model);
+        m_shader.lock()->SetMat4("perspective", _perspective);
+        // TODO : make so the MaterialAsset actually deals with the parameters (once it's implemented)
+    }
 
     // TODO : Create default shader when shader is not valid anymore
 

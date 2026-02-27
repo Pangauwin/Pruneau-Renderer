@@ -11,23 +11,20 @@
 
 #include <glm/glm.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include "core/application.h"
+#include "renderer/mesh.h"
 
+static bool EndsWith(const std::string& value, const std::string& ending);
+static glm::mat4 ConvertMatrix(const aiMatrix4x4& m);
 
 namespace Core {
 	std::unordered_map<AssetID, std::shared_ptr<Asset>> AssetManager::m_assets;
-	AssetID AssetManager::s_nextID = 1;
+	AssetID AssetManager::s_nextID = 0;
 }
 
-std::weak_ptr<Core::ShaderAsset> Core::AssetManager::default_shader;
-//TODO : initialize this pointer : 
-/*
-AssetID shaderID = ImportShader("default_vert.glsl");
-default_shader = GetAsset<ShaderAsset>(shaderID);
-*/
+std::shared_ptr<Core::ShaderAsset> Core::AssetManager::default_shader;
 
 struct ParsedMesh {
 	std::vector<Renderer::Vertex> vertices;
@@ -47,18 +44,30 @@ struct ParsedModel
 	std::vector<ParsedMaterial> materials;
 };
 
+static void ParseMaterials(const aiScene* _scene, ParsedModel& _model);
+static void ParseNode(aiNode* node, const aiScene* scene, const glm::mat4& _parent_transform, ParsedModel& _model);
+static ParsedMesh ParseMesh(aiMesh* _mesh);
+
 Core::AssetID Core::AssetManager::ImportAsset(const std::string& path)
 {
 	AssetID id = 0;
 
+	if (!default_shader.get())
+	{
+		AssetID shaderID = ImportShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\default_vert.glsl");
+		default_shader = GetAsset<ShaderAsset>(shaderID);
+
+		//TODO : move this to the startup of the engine
+	}
+
 	if (EndsWith(path, ".obj") || EndsWith(path, ".gltf") || EndsWith(path, ".glb") || EndsWith(path, ".fbx"))
 	{
-		id = ImportModel(std::move(path));
+		id = ImportModel(path);
 	}
 
 	else if (EndsWith(path, ".png") || EndsWith(path, ".jpg") || EndsWith(path, ".bmp"))
 	{
-		id = ImportTexture(std::move(path));
+		id = ImportTexture(path);
 	}
 
 	else if (EndsWith(path, ".glsl"))
@@ -203,7 +212,7 @@ static ParsedMesh ParseMesh(aiMesh* _mesh)
 
 Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
 {
-	std::vector<std::weak_ptr<Core::MeshAsset>> mesh_assets;
+	std::vector<std::shared_ptr<Core::MeshAsset>> mesh_assets;
 
 	for (const ParsedMesh& mesh : parsed.meshes)
 	{

@@ -20,6 +20,8 @@ public:
 
 	static void RemoveAsset(AssetID _id);
 
+	static const std::unordered_map<AssetID, std::shared_ptr<Asset>>& GetAssets() { return m_assets; }
+
 private:
 	AssetManager() = default;
 
@@ -41,7 +43,7 @@ private:
 
 	static AssetID s_nextID;
 
-	static std::weak_ptr<ShaderAsset> default_shader; // TODO : implement default_shader registering inside the assets pool
+	static std::shared_ptr<ShaderAsset> default_shader; // TODO : implement default_shader registering inside the assets pool
 	// TODO (better) : Add a default material instead of a default shader that holds everything (requires first material implementation)
 };
 

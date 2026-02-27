@@ -1,7 +1,6 @@
 #pragma once
 
-#include "shader.h"
-#include "mesh.h"
+#include "core/asset/asset.h"
 
 #include <vector>
 #include <memory>
@@ -19,12 +18,12 @@ class Model
 	friend class Core::AssetManager;
 
 public:
-	Model(std::vector<std::weak_ptr<Mesh>> _meshes);
+	Model(std::vector<std::shared_ptr<Core::MeshAsset>> _meshes);
 	~Model() = default;
 
-	void Draw();
+	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
 private:
-	std::vector<std::weak_ptr<Mesh>> m_meshes;
+	std::vector<std::shared_ptr<Core::MeshAsset>> m_meshes;
 
 	// Add the transform of the meshes present inside the model
 };

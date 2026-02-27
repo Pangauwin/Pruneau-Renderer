@@ -1,8 +1,8 @@
 #include "model.h"
 
-Renderer::Model::Model(std::vector<std::weak_ptr<Mesh>> _meshes) : m_meshes(std::move(_meshes)) {}
+Renderer::Model::Model(std::vector<std::shared_ptr<Core::MeshAsset>> _meshes) : m_meshes(std::move(_meshes)) {}
 
-void Renderer::Model::Draw()
+void Renderer::Model::Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective)
 {
     /*unsigned int diffuse_nb = 0;
     unsigned int normal_nb = 0;
@@ -46,10 +46,9 @@ void Renderer::Model::Draw()
 
     // TODO : texture binding in shader->Use() method
 
-	for (std::weak_ptr<Mesh> mesh : m_meshes)
+	for (std::shared_ptr<Core::MeshAsset> mesh : m_meshes)
 	{
-        if(mesh.lock())
-		    mesh.lock()->Draw();
+	    mesh.get()->Draw(_view, _model, _perspective);
         // TODO : in case the mesh isn't valid, delete it from the model
         // TODO : even better, store the mesh pointer inside a shared_ptr instead and the asset_manager can load/unload the mesh depending if it's needed or not
 	}

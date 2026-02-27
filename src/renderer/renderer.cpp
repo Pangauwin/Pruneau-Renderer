@@ -131,16 +131,9 @@ void Renderer::Renderer::PostRender()
 				Debug_DrawCubeToFramebuffer(mat,
 					view,
 					*perspective);*/ // TODO : clean test
-				Shader* _shader = _model_renderer->model->GetShader();
 				glm::mat4* _model = &_model_renderer->GetOwner()->GetComponent<Core::Transform>()->GetWorldTransformMatrix();
 
-				_shader->Use();
-				_shader->SetMat4("view", view);
-				_shader->SetMat4("perspective", *perspective);
-				_shader->SetMat4("model", *_model);
-				_shader->SetFloat("time", 0); // TODO : implement time module
-
-				_model_renderer->model->Draw();
+				_model_renderer->model->Draw(view, *_model, *perspective);
 			}
 
 			//Core::LogMessage("GLError : " + std::to_string(glad_glGetError()));

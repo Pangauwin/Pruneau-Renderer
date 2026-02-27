@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdint>
 
+#include <glm/glm.hpp>
 
 namespace Renderer
 {
@@ -45,10 +46,23 @@ private:
 	AssetID m_id;
 };
 
+class ShaderAsset : public Asset
+{
+public:
+	ShaderAsset(std::string _name, AssetID _id, const char* _vertex_shader_code, const char* _fragment_shader_code);
+
+	std::shared_ptr<Renderer::Shader> GetShader() { return m_shader; }
+
+private:
+	std::shared_ptr<Renderer::Shader> m_shader;
+};
+
 class MeshAsset : public Asset
 {
 public:
 	MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader, const glm::mat4& _transform);
+
+	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
 
 private:
 	std::unique_ptr<Renderer::Mesh> m_mesh;
@@ -64,21 +78,12 @@ private:
 	std::unique_ptr<Renderer::Texture> m_texture;
 };
 
-class ShaderAsset : public Asset
-{
-public:
-	ShaderAsset(std::string _name, AssetID _id, const char* _vertex_shader_code, const char* _fragment_shader_code);
-
-	std::weak_ptr<Renderer::Shader> GetShader() { return m_shader; }
-
-private:
-	std::shared_ptr<Renderer::Shader> m_shader;
-};
-
 class ModelAsset : public Asset
 {
 public:
-	ModelAsset(std::string _name, AssetID _id, std::vector<std::weak_ptr<MeshAsset>> _meshes);
+	ModelAsset(std::string _name, AssetID _id, std::vector<std::shared_ptr<MeshAsset>> _meshes);
+
+	const Renderer::Model* GetModel() const { return m_model.get(); }
 
 private:
 	std::unique_ptr<Renderer::Model> m_model;

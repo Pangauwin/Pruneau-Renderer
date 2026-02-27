@@ -146,14 +146,14 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
     ImGui::BeginGroup();
 
-    for(const Core::Asset * _asset : Core::AssetManager::GetAssets())
+    for(auto& it : Core::AssetManager::GetAssets())
     {
-        if (ImGui::Button(_asset->name.c_str(), ImVec2(64, 64)))
+        if (ImGui::Button(it.second.get()->GetName().c_str(), ImVec2(64, 64)))
         {
-            if (_asset->type == Core::ASSET_TYPE_MODEL)
+            if (auto model = std::dynamic_pointer_cast<Core::ModelAsset>(it.second))
             {
                 Core::Entity* _ent = _level->CreateEntity("Model", nullptr);
-                _ent->AddComponent<Core::ModelRenderer>((Renderer::Model*)_asset->data);
+                _ent->AddComponent<Core::ModelRenderer>((Renderer::Model*)model->GetModel());
             }
         }
     }

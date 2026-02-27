@@ -14,7 +14,7 @@ public:
 	void Use() const;
 	void UnBind() const;
 
-	void SetMat4(std::string _name, glm::mat4& _val);
+	void SetMat4(std::string _name, const glm::mat4& _val);
 	void SetFloat(std::string _name, float _val);
 	void SetInt(std::string _name, int _val);
 	void SetBool(std::string _name, bool _val);

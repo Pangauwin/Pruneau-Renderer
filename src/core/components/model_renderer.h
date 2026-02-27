@@ -10,6 +10,7 @@ namespace Core
 class ModelRenderer : public Component, AutoRegisterComponent<ModelRenderer>
 {
 public:
+	//TODO : replace raw pointers by smart ones
 	explicit ModelRenderer(Entity* owner) : Component(owner), model(nullptr) // Used by editor
 	{
 
