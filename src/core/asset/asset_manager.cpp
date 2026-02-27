@@ -9,27 +9,49 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <glm/glm.hpp>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include "core/application.h"
 
-#include "renderer/texture.h"
 
 namespace Core {
 	std::unordered_map<AssetID, std::shared_ptr<Asset>> AssetManager::m_assets;
 	AssetID AssetManager::s_nextID = 1;
 }
 
+std::weak_ptr<Core::ShaderAsset> Core::AssetManager::default_shader;
+//TODO : initialize this pointer : 
 /*
-TODO: Create import failed states and warnings on import
+AssetID shaderID = ImportShader("default_vert.glsl");
+default_shader = GetAsset<ShaderAsset>(shaderID);
 */
+
+struct ParsedMesh {
+	std::vector<Renderer::Vertex> vertices;
+	std::vector<uint32_t> indices;
+	int materialIndex;
+	glm::mat4 transform;
+};
+
+struct ParsedMaterial
+{
+	std::vector<std::string> diffuse_textures;
+};
+
+struct ParsedModel
+{
+	std::vector<ParsedMesh> meshes;
+	std::vector<ParsedMaterial> materials;
+};
 
 Core::AssetID Core::AssetManager::ImportAsset(const std::string& path)
 {
 	AssetID id = 0;
 
-	if (EndsWith(path, ".obj") || EndsWith(path, ".fbx"))
+	if (EndsWith(path, ".obj") || EndsWith(path, ".gltf") || EndsWith(path, ".glb") || EndsWith(path, ".fbx"))
 	{
 		id = ImportModel(std::move(path));
 	}
@@ -64,38 +86,154 @@ void Core::AssetManager::RemoveAsset(AssetID _id)
 Core::AssetID Core::AssetManager::ImportModel(const std::string& _path)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(_path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
-	std::vector<std::weak_ptr<Core::Asset>> _meshes;
+	unsigned int import_flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality;
 
-	ProcessNode(scene->mRootNode, scene, _meshes);
+	if (EndsWith(_path, ".obj"))
+		import_flags |= aiProcess_FlipUVs;
+
+	const aiScene* scene = importer.ReadFile(_path, import_flags);
+
+	if (!scene || !scene->mRootNode)
+	{
+		Core::LogMessage("Assimp error: " + std::string(importer.GetErrorString()));
+		return 0;
+	}
+
+	ParsedModel parsed_model;
+
+	ParseMaterials(scene, parsed_model);
+	ParseNode(scene->mRootNode, scene, glm::mat4(1.0f), parsed_model);
+
+	return BuildModelAsset(parsed_model);
+
+	//TODO #1 : apply the right shader to the meshes
+	//TODO #2 : apply the right transform of the meshes (in the node) inside the model
+}
+
+static void ParseMaterials(const aiScene* _scene, ParsedModel& _model)
+{
+	for (unsigned int i = 0; i < _scene->mNumMaterials; i++)
+	{
+		ParsedMaterial mat;
+
+		aiMaterial* material = _scene->mMaterials[i];
+
+		aiString path;
+
+		for (unsigned int j = 0; j < material->GetTextureCount(aiTextureType_DIFFUSE); j++)
+		{
+			material->GetTexture(aiTextureType_DIFFUSE, j, &path);
+			mat.diffuse_textures.push_back(path.C_Str());
+		}
+
+		_model.materials.push_back(mat);
+	}
+}
+
+static void ParseNode(aiNode* node, const aiScene* scene, const glm::mat4& _parent_transform, ParsedModel& _model)
+{
+	glm::mat4 local_transform = ConvertMatrix(node->mTransformation);
+	glm::mat4 global_transform = _parent_transform * local_transform;
+
+	for (unsigned int i = 0; i < node->mNumMeshes; i++)
+	{
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+
+		ParsedMesh parsed_mesh = ParseMesh(mesh);
+		parsed_mesh.transform = global_transform;
+
+		_model.meshes.push_back(parsed_mesh);
+	}
+
+	for (unsigned int i = 0; i < node->mNumChildren; i++)
+	{
+		ParseNode(node->mChildren[i], scene, global_transform, _model);
+	}
+}
+
+static ParsedMesh ParseMesh(aiMesh* _mesh)
+{
+	ParsedMesh parsed_mesh;
+
+	for (unsigned int i = 0; i < _mesh->mNumVertices; i++)
+	{
+		Renderer::Vertex vertex{};
+
+		vertex.position = {
+			_mesh->mVertices[i].x,
+			_mesh->mVertices[i].y,
+			_mesh->mVertices[i].z
+		};
+
+		if (_mesh->HasNormals())
+		{
+			vertex.normal = {
+				_mesh->mNormals[i].x,
+				_mesh->mNormals[i].y,
+				_mesh->mNormals[i].z
+			};
+		}
+
+		if (_mesh->HasTextureCoords(0))
+		{
+			vertex.uv_coord = {
+				_mesh->mTextureCoords[0][i].x,
+				_mesh->mTextureCoords[0][i].y
+			};
+		}
+
+		parsed_mesh.vertices.push_back(vertex);
+	}
+
+	for (unsigned int i = 0; i < _mesh->mNumFaces; i++)
+	{
+		aiFace& face = _mesh->mFaces[i];
+
+		for (unsigned int j = 0; j < face.mNumIndices; j++)
+		{
+			parsed_mesh.indices.push_back(face.mIndices[j]);
+		}
+	}
+
+	parsed_mesh.materialIndex = _mesh->mMaterialIndex;
+
+	return parsed_mesh;
+}
+
+Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
+{
+	std::vector<std::weak_ptr<Core::MeshAsset>> mesh_assets;
+
+	for (const ParsedMesh& mesh : parsed.meshes)
+	{
+		s_nextID++;
+
+		auto mesh_asset = std::make_shared<MeshAsset>(
+			"Mesh_" + std::to_string(s_nextID),
+			s_nextID,
+			mesh.vertices,
+			mesh.indices,
+			default_shader,
+			mesh.transform
+		);
+
+		m_assets[s_nextID] = mesh_asset;
+
+		mesh_assets.push_back(mesh_asset);
+	}
 
 	s_nextID++;
 
-	Core::AssetManager::m_assets[s_nextID] = std::make_shared<ModelAsset>("Model_" + std::to_string(s_nextID), s_nextID, _meshes);
+	auto model = std::make_shared<ModelAsset>(
+		"Model_" + std::to_string(s_nextID),
+		s_nextID,
+		mesh_assets
+	);
+
+	m_assets[s_nextID] = model;
 
 	return s_nextID;
-
-	//TODO #1 : apply the right shader to the meshes
-	//TODO #2 : apply the right transform of the meshes (if that exists ?) inside the model
-	//TODO #3 : when all of that is done, create a model asset
-}
-
-void Core::AssetManager::ProcessNode(void* _node, const void* _scene, std::vector<std::weak_ptr<Core::Asset>>& _meshes)
-{
-	aiNode* node = (aiNode*)_node;
-	const aiScene* scene = (aiScene*)_scene;
-
-	for (size_t i = 0; i < node->mNumMeshes; i++)
-	{
-		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		_meshes.push_back(ProcessMesh(mesh, scene));
-	}
-
-	for (size_t i = 0; i < node->mNumChildren; i++)
-	{
-		ProcessNode(node->mChildren[i], scene, _meshes);
-	}
 }
 
 Core::AssetID Core::AssetManager::ImportTexture(const std::string& path)
@@ -172,63 +310,6 @@ Core::AssetID Core::AssetManager::ImportShader(const std::string& path)
 	return s_nextID;
 }
 
-std::weak_ptr<Core::Asset> Core::AssetManager::ProcessMesh(void* _mesh, const void* _scene)
-{
-	aiMesh* mesh = (aiMesh*)_mesh;
-	const aiScene* scene = (aiScene*)_scene;
-
-	std::vector<Renderer::Vertex> vertices;
-	std::vector<unsigned int> indices;
-
-	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
-	{
-		Renderer::Vertex vertex;
-		vertex.position = glm::vec3({ mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z });
-		vertex.normal = glm::vec3({ mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z });
-		if (mesh->HasTextureCoords(0) && mesh->mTextureCoords[0])
-			vertex.uv_coord = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-		else
-			vertex.uv_coord = glm::vec2(0.0f, 0.0f);
-		vertices.push_back(vertex);
-	}
-
-	for (size_t i = 0; i < mesh->mNumFaces; i++)
-	{
-		aiFace face = mesh->mFaces[i];
-		for (size_t j = 0; j < face.mNumIndices; j++)
-		{
-			indices.push_back(face.mIndices[j]);
-		}
-	}
-
-	// TODO : make this rework again (texture assigned to material on import) AND texture import automatically
-	if (mesh->mMaterialIndex >= 0)
-	{
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		LoadMaterialTextures(material, (void*)aiTextureType_DIFFUSE, Renderer::TEXTURE_TYPE_DIFFUSE);
-		LoadMaterialTextures(material, (void*)aiTextureType_SPECULAR, Renderer::TEXTURE_TYPE_NORMAL_MAP);
-	}
-
-	s_nextID++;
-	Core::AssetManager::m_assets[s_nextID] = std::make_shared<MeshAsset>("Mesh_" + std::to_string(s_nextID), s_nextID, vertices, indices); // TODO : fix : add shader inside constructor
-
-	return Core::AssetManager::m_assets[s_nextID];
-}
-
-static void LoadMaterialTextures(void* _mat, void* _type, Renderer::TEXTURE_TYPE _type_name)
-{
-	aiMaterial* mat = (aiMaterial*)_mat;
-	aiTextureType type = *(aiTextureType*)_type;
-
-	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
-	{
-		aiString _path;
-		mat->GetTexture(type, i, &_path);
-
-		Core::AssetManager::ImportAsset(_path.C_Str());
-	}
-}
-
 static bool EndsWith(const std::string& value, const std::string& ending)
 {
 	if (ending.size() > value.size())
@@ -237,5 +318,15 @@ static bool EndsWith(const std::string& value, const std::string& ending)
 	return std::equal(
 		ending.rbegin(), ending.rend(),
 		value.rbegin()
+	);
+}
+
+static glm::mat4 ConvertMatrix(const aiMatrix4x4& m)
+{
+	return glm::mat4(
+		m.a1, m.b1, m.c1, m.d1,
+		m.a2, m.b2, m.c2, m.d2,
+		m.a3, m.b3, m.c3, m.d3,
+		m.a4, m.b4, m.c4, m.d4
 	);
 }

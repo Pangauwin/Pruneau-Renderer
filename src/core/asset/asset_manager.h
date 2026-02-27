@@ -4,6 +4,8 @@
 
 #include <unordered_map>
 
+struct ParsedModel;
+
 namespace Core {
 
 // TODO : Import Settings / Preferences
@@ -24,9 +26,7 @@ private:
 #pragma region ModelLoading
 	static AssetID ImportModel(const std::string& _path);
 
-	static std::weak_ptr<Asset> ProcessMesh(void* _mesh, const void* _scene);
-
-	static void ProcessNode(void* _node, const void* _scene, std::vector<std::weak_ptr<Core::Asset>>& _meshes);
+	static Core::AssetID BuildModelAsset(const ParsedModel& parsed);
 #pragma endregion
 
 #pragma region TextureLoading
@@ -40,6 +40,9 @@ private:
 	static std::unordered_map<AssetID, std::shared_ptr<Asset>> m_assets;
 
 	static AssetID s_nextID;
+
+	static std::weak_ptr<ShaderAsset> default_shader; // TODO : implement default_shader registering inside the assets pool
+	// TODO (better) : Add a default material instead of a default shader that holds everything (requires first material implementation)
 };
 
 }

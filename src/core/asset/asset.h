@@ -38,6 +38,8 @@ public:
 	const std::string& GetName() const { return name; }
 	AssetID GetID() const { return m_id; }
 
+	virtual void OnGUIRender() {}
+
 private:
 	std::string name;
 	AssetID m_id;
@@ -46,10 +48,11 @@ private:
 class MeshAsset : public Asset
 {
 public:
-	MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader);
+	MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader, const glm::mat4& _transform);
 
 private:
 	std::unique_ptr<Renderer::Mesh> m_mesh;
+	glm::mat4 m_transform; // TODO : improve this by making the transform held by the model instead
 };
 
 class TextureAsset : public Asset
@@ -81,6 +84,9 @@ private:
 	std::unique_ptr<Renderer::Model> m_model;
 };
 
+// TODO : Implement MaterialAsset (shader + textures + other shader parameters) => On use : Material does everything
 // TODO : Implement Audio Assets
 
+
+// TODO : Implement Instances (MeshInstance)
 }

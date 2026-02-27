@@ -4,9 +4,9 @@
 
 #include "renderer/mesh.h"
 
-Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader) 
-	: Asset(std::move(_name), _id), m_mesh(std::make_unique<Renderer::Mesh>(vertices, indices, _shader.lock()->GetShader())) {}
-
+Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader, const glm::mat4& _transform) 
+	: Asset(std::move(_name), _id), m_mesh(std::make_unique<Renderer::Mesh>(vertices, indices, _shader.lock()->GetShader())), m_transform(_transform) {}
+// TODO : replace _shader.lock()->GetShader() by something safer (weak_ptr can be empty)
 #pragma endregion
 
 #pragma region TextureAsset
