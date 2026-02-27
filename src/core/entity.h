@@ -85,8 +85,6 @@ private:
 public:
 	std::string name;
 
-
-	// TODO : Implement Getters Instead
 public:
 	std::unordered_map<std::type_index, std::unique_ptr<Component>> components;
 	std::vector<Entity*> children;
