@@ -24,6 +24,10 @@ First of all, I want to thanks all the developers of the librairies used in this
 - **Framebuffer Support:** Custom framebuffer class with color and depth attachments.
 - **Scalable Design:** Initial support for 2D and 3D mesh rendering.
 
+## Overview
+
+<img width="1919" height="1006" alt="image" src="https://github.com/user-attachments/assets/1426c4d9-4f58-47ff-b5f4-18b39b835c2e" />
+
 ## Getting Started
 
 #### For now, editor code and engine code are in the same project. As the editor is only a layer of the executable, I am planning to separate the editor and the engine layer. In the future, the engine will be a lib file and the editor an application.
@@ -72,6 +76,7 @@ There will be one binary for each major version release.
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 
 
 
