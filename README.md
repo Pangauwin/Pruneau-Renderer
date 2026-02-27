@@ -17,12 +17,11 @@ First of all, I want to thanks all the developers of the librairies used in this
 ## Features
 
 - **OpenGL Rendering:** Core rendering functionality with support for framebuffers.
-- **Windowing:** Managed using GLFW.
+- **Asset Importation** : import fbx, glb, gltf, png, jpg, obj, glsl files into the engine by a simple drop !
 - **GUI:** ImGui docking interface and ImGuizmo for manipulations.
 - **Layer System:** Modular layer architecture for scenes, UI, and systems.
 - **Event System:** Centralized event handling for window events and input.
 - **Framebuffer Support:** Custom framebuffer class with color and depth attachments.
-- **Scalable Design:** Initial support for 2D and 3D mesh rendering.
 
 ## Overview
 
