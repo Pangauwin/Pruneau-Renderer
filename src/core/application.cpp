@@ -11,6 +11,8 @@
 #include "../layers/engine_layer.h"
 #include "../renderer/renderer.h"
 
+#include "core/time.h"
+
 static float dt = 0.00001f;
 static float time = 0.0f;
 
@@ -41,8 +43,12 @@ Core::Application::~Application()
 
 void Core::Application::Run()
 {
+	Time::Init();
+
 	while (!m_app_should_close)
 	{
+		Time::Update();
+
 		PollEvents();
 		m_window->SwapBuffers();
 
@@ -62,11 +68,6 @@ void Core::Application::Run()
 
 		m_renderer->PostRender();
 
-		/*
-		TODO : For Game-Releases builds :
-			- Implement EditorRender() instead of rendering the editor during GUIRender()
-		*/
-
 		m_renderer->PreGUIRender();
 
 		for (Layer* _layer : m_layer_stack)
@@ -74,7 +75,7 @@ void Core::Application::Run()
 
 		LevelManager::OnGUIRender();
 
-		m_renderer->PostGUIRender(); // Call all the function for imgui to print correctly
+		m_renderer->PostGUIRender();
 	}
 
 	OnClose();
@@ -144,5 +145,6 @@ void Core::Application::OnClose()
 	for (Layer* _layer : m_layer_stack)
 		_layer->OnDetach();
 
-	// TODO : destroy window
+	delete m_renderer.release();
+	delete m_window.release();
 }
