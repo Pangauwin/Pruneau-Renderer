@@ -26,6 +26,7 @@ First of all, I want to thanks all the developers of the librairies used in this
 ## Overview
 
 <img width="1919" height="1006" alt="image" src="https://github.com/user-attachments/assets/1426c4d9-4f58-47ff-b5f4-18b39b835c2e" />
+
 Credits to the [Blender](https://www.blender.org/) team for the suzanne model.
 
 ## Getting Started
