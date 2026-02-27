@@ -117,5 +117,5 @@ void Platform::Window::PollEvents()
 
 float Platform::Window::GetTime()
 {
-	return glfwGetTime() / 1000.0f;
+	return static_cast<float>(glfwGetTime());
 }
