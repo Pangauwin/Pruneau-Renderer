@@ -60,13 +60,12 @@ private:
 class MeshAsset : public Asset
 {
 public:
-	MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader, const glm::mat4& _transform);
+	MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader);
 
 	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
 
 private:
 	std::unique_ptr<Renderer::Mesh> m_mesh;
-	glm::mat4 m_transform; // TODO : improve this by making the transform held by the model instead
 };
 
 class TextureAsset : public Asset
@@ -81,7 +80,7 @@ private:
 class ModelAsset : public Asset
 {
 public:
-	ModelAsset(std::string _name, AssetID _id, std::vector<std::shared_ptr<MeshAsset>> _meshes);
+	ModelAsset(std::string _name, AssetID _id, std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes);
 
 	const Renderer::Model* GetModel() const { return m_model.get(); }
 

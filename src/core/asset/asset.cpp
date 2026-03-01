@@ -7,8 +7,8 @@
 
 #include "renderer/mesh.h"
 
-Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader, const glm::mat4& _transform) 
-	: Asset(std::move(_name), _id), m_transform(_transform) 
+Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader) 
+	: Asset(std::move(_name), _id) 
 {
 	if (_shader.lock())
 	{
@@ -49,7 +49,7 @@ Core::ShaderAsset::ShaderAsset(std::string _name, AssetID _id, const char* _vert
 
 #include "renderer/model.h"
 
-Core::ModelAsset::ModelAsset(std::string _name, AssetID _id, std::vector<std::shared_ptr<MeshAsset>> _meshes)
+Core::ModelAsset::ModelAsset(std::string _name, AssetID _id, std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes)
 	: Asset(_name, _id), m_model(std::make_unique<Renderer::Model>(std::move(_meshes))) {}
 
 #pragma endregion

@@ -100,7 +100,7 @@ Core::AssetID Core::AssetManager::ImportModel(const std::string& _path)
 {
 	Assimp::Importer importer;
 
-	unsigned int import_flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality;
+	unsigned int import_flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality | aiProcess_GlobalScale;
 
 	if (EndsWith(_path, ".obj"))
 		import_flags |= aiProcess_FlipUVs;
@@ -216,7 +216,7 @@ static ParsedMesh ParseMesh(aiMesh* _mesh)
 
 Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
 {
-	std::vector<std::shared_ptr<Core::MeshAsset>> mesh_assets;
+	std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _model_mesh_container;
 
 	for (const ParsedMesh& mesh : parsed.meshes)
 	{
@@ -227,13 +227,16 @@ Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
 			s_nextID,
 			mesh.vertices,
 			mesh.indices,
-			default_shader,
-			mesh.transform
+			default_shader
 		);
 
 		m_assets[s_nextID] = mesh_asset;
 
-		mesh_assets.push_back(mesh_asset);
+		std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>> _t;
+
+		_t = std::make_tuple(mesh.transform, mesh_asset);
+
+		_model_mesh_container.push_back(_t);
 	}
 
 	s_nextID++;
@@ -241,7 +244,7 @@ Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
 	auto model = std::make_shared<ModelAsset>(
 		"Model_" + std::to_string(s_nextID),
 		s_nextID,
-		mesh_assets
+		_model_mesh_container
 	);
 
 	m_assets[s_nextID] = model;
@@ -336,10 +339,12 @@ static bool EndsWith(const std::string& value, const std::string& ending)
 
 static glm::mat4 ConvertMatrix(const aiMatrix4x4& m)
 {
-	return glm::mat4(
-		m.a1, m.b1, m.c1, m.d1,
-		m.a2, m.b2, m.c2, m.d2,
-		m.a3, m.b3, m.c3, m.d3,
-		m.a4, m.b4, m.c4, m.d4
-	);
+	glm::mat4 mat;
+
+	mat[0][0] = m.a1; mat[1][0] = m.a2; mat[2][0] = m.a3; mat[3][0] = m.a4;
+	mat[0][1] = m.b1; mat[1][1] = m.b2; mat[2][1] = m.b3; mat[3][1] = m.b4;
+	mat[0][2] = m.c1; mat[1][2] = m.c2; mat[2][2] = m.c3; mat[3][2] = m.c4;
+	mat[0][3] = m.d1; mat[1][3] = m.d2; mat[2][3] = m.d3; mat[3][3] = m.d4;
+
+	return mat;
 }
