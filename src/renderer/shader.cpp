@@ -67,7 +67,7 @@ Renderer::Shader::~Shader()
 	glDeleteProgram(m_id);
 }
 
-void Renderer::Shader::Use() const
+void Renderer::Shader::Bind() const
 {
 	glUseProgram(m_id);
 }
@@ -84,18 +84,18 @@ void Renderer::Shader::SetMat4(std::string _name,const glm::mat4& _val)
 
 void Renderer::Shader::SetFloat(std::string _name, float _val)
 {
-	Use();
+	Bind();
 	glUniform1f(glGetUniformLocation(m_id, _name.c_str()), _val);
 }
 
 void Renderer::Shader::SetInt(std::string _name, int _val)
 {
-	Use();
+	Bind();
 	glUniform1i(glGetUniformLocation(m_id, _name.c_str()), _val);
 }
 
 void Renderer::Shader::SetBool(std::string _name, bool _val)
 {
-	Use();
+	Bind();
 	glUniform1i(glGetUniformLocation(m_id, _name.c_str()), (int)_val);
 }

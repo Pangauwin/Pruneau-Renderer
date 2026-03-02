@@ -140,7 +140,7 @@ void Renderer::Mesh::Draw(const glm::mat4& _view, const glm::mat4& _model, const
 {
     if (m_shader.lock())
     {
-        m_shader.lock()->Use();
+        m_shader.lock()->Bind();
         m_shader.lock()->SetMat4("view", _view);
         m_shader.lock()->SetMat4("model", _model);
         m_shader.lock()->SetMat4("perspective", _perspective);

@@ -11,7 +11,7 @@ public:
 	Shader(const char* _vertex_shader_code, const char* _fragment_shader_code);
 	~Shader();
 
-	void Use() const;
+	void Bind() const;
 	void UnBind() const;
 
 	void SetMat4(std::string _name, const glm::mat4& _val);
