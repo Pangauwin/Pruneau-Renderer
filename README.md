@@ -14,7 +14,7 @@ First of all, I want to thanks all the developers of the librairies used in this
  - [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo)
  - [stb](https://github.com/nothings/stb)
 
- Mention to [enemymouse](https://github.com/enemymouse) for the gui graphics style
+ Credits to [enemymouse](https://github.com/enemymouse) for the gui graphics style
 
 ## Features
 
@@ -79,6 +79,7 @@ There will be one binary for each major version release.
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 
 
 
