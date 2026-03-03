@@ -14,6 +14,8 @@ First of all, I want to thanks all the developers of the librairies used in this
  - [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo)
  - [stb](https://github.com/nothings/stb)
 
+ Mention to [enemymouse](https://github.com/enemymouse) for the gui graphics style
+
 ## Features
 
 - **OpenGL Rendering:** Core rendering functionality with support for framebuffers.
