@@ -4,10 +4,9 @@
 
 #include <glad/glad.h>
 
-Renderer::Texture::Texture(const char* _path)
+Renderer::Texture::Texture(const char* _path) : type(TEXTURE_TYPE_DIFFUSE)
 {
 	glGenTextures(1, &m_id);
-
 
     glBindTexture(GL_TEXTURE_2D, m_id);
 
@@ -73,10 +72,16 @@ Renderer::Texture::Texture(void* _data, int _width, int _height)
 
 Renderer::Texture::~Texture()
 {
-
+    glDeleteTextures(1, &m_id);
 }
 
 unsigned int Renderer::Texture::GetID() const
 {
 	return m_id;
+}
+
+void Renderer::Texture::Bind(int _slot) const
+{
+    glActiveTexture(GL_TEXTURE0 + _slot);
+    glBindTexture(GL_TEXTURE_2D, m_id);
 }

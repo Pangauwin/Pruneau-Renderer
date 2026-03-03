@@ -22,11 +22,9 @@ public:
 
 	unsigned int GetID() const;
 
+	void Bind(int _slot) const;
 
-	TEXTURE_TYPE type = TEXTURE_TYPE_DIFFUSE;
-
-	std::string path;
-
+	TEXTURE_TYPE type;
 private:
 	unsigned int m_id = 0;
 

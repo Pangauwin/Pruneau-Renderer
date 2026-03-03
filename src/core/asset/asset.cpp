@@ -34,6 +34,11 @@ void Core::MeshAsset::Draw(const glm::mat4& _view, const glm::mat4& _model, cons
 Core::TextureAsset::TextureAsset(std::string _name, AssetID _id, void* _data, int _width, int _height) 
 	: Asset(std::move(_name), _id), m_texture(std::make_unique<Renderer::Texture>(_data, _width, _height)) {}
 
+void Core::TextureAsset::Bind(int _slot)
+{
+	m_texture.get()->Bind(_slot);
+}
+
 #pragma endregion
 
 #pragma region ShaderAsset
@@ -51,5 +56,84 @@ Core::ShaderAsset::ShaderAsset(std::string _name, AssetID _id, const char* _vert
 
 Core::ModelAsset::ModelAsset(std::string _name, AssetID _id, std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes)
 	: Asset(_name, _id), m_model(std::make_unique<Renderer::Model>(std::move(_meshes))) {}
+
+#pragma endregion
+
+#pragma region MaterialAsset
+
+Core::MaterialAsset::MaterialAsset(std::string _name, AssetID _id, std::shared_ptr<ShaderAsset> _shader) : Asset(_name, _id), m_shader(std::move(_shader)) {}
+
+void Core::MaterialAsset::SetTexture(const std::string& uniform_name, std::shared_ptr<TextureAsset> _texture)
+{
+	m_textures[uniform_name] = std::move(_texture);
+}
+
+void Core::MaterialAsset::SetUniform(const std::string& uniform_name, const UniformValue& _value)
+{
+	m_uniforms[uniform_name] = _value;
+}
+
+void Core::MaterialAsset::Bind()
+{
+	if (!m_shader)
+		return;
+
+	auto _shader = m_shader->GetShader();
+	_shader->Bind();
+
+	int texture_slot = 0;
+
+	for (auto& [uniform_name, texture_asset] : m_textures)
+	{
+		if (!texture_asset)
+			continue;
+
+		Renderer::Texture* _texture = texture_asset->GetTexture();
+
+		if (!_texture)
+			continue;
+
+		_texture->Bind(texture_slot);
+
+		_shader->SetInt(uniform_name, texture_slot);
+
+		texture_slot++;
+	}
+
+	for (auto& [uniform_name, value] : m_uniforms)
+	{
+		UploadUniform(uniform_name, value);
+	}
+
+}
+
+void Core::MaterialAsset::UploadUniform(const std::string& name, const UniformValue& _value)
+{
+	std::shared_ptr<Renderer::Shader> _shader = m_shader->GetShader();
+
+	std::visit([&](auto&& arg)
+		{
+			using T = std::decay_t<decltype(arg)>;
+
+			if constexpr (std::is_same_v<T, int>)
+				_shader->SetInt(name, arg);
+
+			else if constexpr (std::is_same_v<T, float>)
+				_shader->SetFloat(name, arg);
+
+			else if constexpr (std::is_same_v<T, glm::vec2>)
+				_shader->SetVec2(name, arg);
+
+			else if constexpr (std::is_same_v<T, glm::vec3>)
+				_shader->SetVec3(name, arg);
+
+			else if constexpr (std::is_same_v<T, glm::vec4>)
+				_shader->SetVec4(name, arg);
+
+			else if constexpr (std::is_same_v<T, glm::mat4>)
+				_shader->SetMat4(name, arg);
+		}, _value);
+}
+
 
 #pragma endregion

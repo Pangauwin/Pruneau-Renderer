@@ -4,6 +4,8 @@
 #include <memory>
 #include <vector>
 #include <cstdint>
+#include <unordered_map>
+#include <variant>
 
 #include <glm/glm.hpp>
 
@@ -73,6 +75,9 @@ class TextureAsset : public Asset
 public:
 	TextureAsset(std::string _name, AssetID _id, void* _data, int _width, int _height); // TODO : add texture settings
 
+	Renderer::Texture* GetTexture() { return m_texture.get(); }
+	void Bind(int _slot);
+
 private:
 	std::unique_ptr<Renderer::Texture> m_texture;
 };
@@ -86,6 +91,31 @@ public:
 
 private:
 	std::unique_ptr<Renderer::Model> m_model;
+};
+
+class MaterialAsset : public Asset
+{
+public:
+	using UniformValue = std::variant<int, float, glm::vec2, glm::vec3, glm::vec4, glm::mat4>;
+
+public:
+	MaterialAsset(std::string _name, AssetID _id, std::shared_ptr<ShaderAsset> _shader);
+
+	void SetTexture(const std::string& uniform_name, std::shared_ptr<TextureAsset> _texture);
+	void SetUniform(const std::string& uniform_name, const UniformValue& _value);
+
+	std::shared_ptr<ShaderAsset> GetShader() const { return m_shader; }
+
+	void Bind();
+
+private:
+	void UploadUniform(const std::string& name, const UniformValue& _value);
+
+private:
+	std::shared_ptr<ShaderAsset> m_shader;
+
+	std::unordered_map<std::string, std::shared_ptr<TextureAsset>> m_textures;
+	std::unordered_map<std::string, UniformValue> m_uniforms;
 };
 
 // TODO : Implement MaterialAsset (shader + textures + other shader parameters) => On use : Material does everything

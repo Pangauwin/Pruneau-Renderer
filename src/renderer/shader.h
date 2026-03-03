@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 
 namespace Renderer {
 
@@ -14,10 +14,15 @@ public:
 	void Bind() const;
 	void UnBind() const;
 
-	void SetMat4(std::string _name, const glm::mat4& _val);
-	void SetFloat(std::string _name, float _val);
-	void SetInt(std::string _name, int _val);
-	void SetBool(std::string _name, bool _val);
+	void SetMat4(const std::string& _name, const glm::mat4& _val) const;
+	void SetVec2(const std::string& _name, const glm::vec2& _val) const;
+	void SetVec3(const std::string& _name, const glm::vec3& _val) const;
+	void SetVec4(const std::string& _name, const glm::vec4& _val) const;
+	void SetFloat(const std::string& _name, float _val) const;
+	void SetInt(const std::string& _name, int _val) const;
+	void SetBool(const std::string& _name, bool _val) const;
+
+	// TODO : Optimize Setters (can be expensive if called each frame)
 
 private:
 	unsigned int m_id;
