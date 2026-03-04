@@ -11,7 +11,7 @@
 #include "components/transform.h"
 
 namespace Core {
-
+	//TODO : Create EntityID
 class Entity
 {
 public:

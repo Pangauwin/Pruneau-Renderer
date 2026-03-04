@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <variant>
 
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 
 namespace Renderer
 {
@@ -48,6 +48,8 @@ private:
 	AssetID m_id;
 };
 
+// TODO : Implement OnGuiRender on all Assets
+
 class ShaderAsset : public Asset
 {
 public:
@@ -55,42 +57,24 @@ public:
 
 	std::shared_ptr<Renderer::Shader> GetShader() { return m_shader; }
 
+	void OnGUIRender();
+
 private:
 	std::shared_ptr<Renderer::Shader> m_shader;
-};
-
-class MeshAsset : public Asset
-{
-public:
-	MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader);
-
-	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
-
-private:
-	std::unique_ptr<Renderer::Mesh> m_mesh;
 };
 
 class TextureAsset : public Asset
 {
 public:
-	TextureAsset(std::string _name, AssetID _id, void* _data, int _width, int _height); // TODO : add texture settings
+	TextureAsset(std::string _name, AssetID _id, void* _data, int _width, int _height);
 
 	Renderer::Texture* GetTexture() { return m_texture.get(); }
 	void Bind(int _slot);
 
+	void OnGUIRender();
+
 private:
 	std::unique_ptr<Renderer::Texture> m_texture;
-};
-
-class ModelAsset : public Asset
-{
-public:
-	ModelAsset(std::string _name, AssetID _id, std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes);
-
-	const Renderer::Model* GetModel() const { return m_model.get(); }
-
-private:
-	std::unique_ptr<Renderer::Model> m_model;
 };
 
 class MaterialAsset : public Asset
@@ -108,6 +92,8 @@ public:
 
 	void Bind();
 
+	void OnGUIRender();
+
 private:
 	void UploadUniform(const std::string& name, const UniformValue& _value);
 
@@ -118,7 +104,32 @@ private:
 	std::unordered_map<std::string, UniformValue> m_uniforms;
 };
 
-// TODO : Implement MaterialAsset (shader + textures + other shader parameters) => On use : Material does everything
+class MeshAsset : public Asset
+{
+public:
+	MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<MaterialAsset> _shader);
+
+	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
+
+	void OnGUIRender();
+
+private:
+	std::unique_ptr<Renderer::Mesh> m_mesh;
+};
+
+class ModelAsset : public Asset
+{
+public:
+	ModelAsset(std::string _name, AssetID _id, std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes);
+
+	const Renderer::Model* GetModel() const { return m_model.get(); }
+
+	void OnGUIRender();
+
+private:
+	std::unique_ptr<Renderer::Model> m_model;
+};
+
 // TODO : Implement Audio Assets
 
 

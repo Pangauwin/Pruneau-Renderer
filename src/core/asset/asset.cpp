@@ -1,4 +1,7 @@
 #include "asset.h"
+
+#include <imgui.h>
+
 #include "asset_manager.h"
 
 #include "core/application.h"
@@ -7,23 +10,27 @@
 
 #include "renderer/mesh.h"
 
-Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<ShaderAsset> _shader) 
+Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<MaterialAsset> _material) 
 	: Asset(std::move(_name), _id) 
 {
-	if (_shader.lock())
+	if (_material.lock())
 	{
-		m_mesh = std::make_unique<Renderer::Mesh>(vertices, indices, _shader.lock()->GetShader());
+		m_mesh = std::make_unique<Renderer::Mesh>(vertices, indices, _material);
 	}
 	else
 	{
-		m_mesh = std::make_unique<Renderer::Mesh>(vertices, indices, Core::AssetManager::error_shader->GetShader());
-		Core::LogMessage("The shader assigned to the model, error shader assigned instead. ModelID:" + std::to_string(_id));
+		m_mesh = std::make_unique<Renderer::Mesh>(vertices, indices, Core::AssetManager::error_material);
+		Core::LogMessage("The material assigned to the model is not valid, error material assigned instead. ModelID:" + std::to_string(_id));
 	}
 }
 
 void Core::MeshAsset::Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective)
 {
 	m_mesh->Draw(_view, _model, _perspective);
+}
+void Core::MeshAsset::OnGUIRender()
+{
+	ImGui::Text(("Asset ID: " + std::to_string(GetID())).c_str());
 }
 #pragma endregion
 
@@ -39,6 +46,11 @@ void Core::TextureAsset::Bind(int _slot)
 	m_texture.get()->Bind(_slot);
 }
 
+void Core::TextureAsset::OnGUIRender()
+{
+	ImGui::Text(("Asset ID: " + std::to_string(GetID())).c_str());
+}
+
 #pragma endregion
 
 #pragma region ShaderAsset
@@ -48,6 +60,11 @@ void Core::TextureAsset::Bind(int _slot)
 Core::ShaderAsset::ShaderAsset(std::string _name, AssetID _id, const char* _vertex_shader_code, const char* _fragment_shader_code) 
 	: Asset(_name, _id), m_shader(std::make_shared<Renderer::Shader>(_vertex_shader_code, _fragment_shader_code)) {}
 
+void Core::ShaderAsset::OnGUIRender()
+{
+	ImGui::Text(("Asset ID: " + std::to_string(GetID())).c_str());
+}
+
 #pragma endregion
 
 #pragma region ModelAsset
@@ -56,6 +73,11 @@ Core::ShaderAsset::ShaderAsset(std::string _name, AssetID _id, const char* _vert
 
 Core::ModelAsset::ModelAsset(std::string _name, AssetID _id, std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes)
 	: Asset(_name, _id), m_model(std::make_unique<Renderer::Model>(std::move(_meshes))) {}
+
+void Core::ModelAsset::OnGUIRender()
+{
+	ImGui::Text(("Asset ID: " + std::to_string(GetID())).c_str());
+}
 
 #pragma endregion
 
@@ -105,6 +127,11 @@ void Core::MaterialAsset::Bind()
 		UploadUniform(uniform_name, value);
 	}
 
+}
+
+void Core::MaterialAsset::OnGUIRender()
+{
+	ImGui::Text(("Asset ID: " + std::to_string(GetID())).c_str());
 }
 
 void Core::MaterialAsset::UploadUniform(const std::string& name, const UniformValue& _value)

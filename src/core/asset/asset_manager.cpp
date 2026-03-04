@@ -1,4 +1,5 @@
 #include "asset_manager.h"
+#include "asset.h"
 
 #include <string>
 
@@ -26,6 +27,8 @@ namespace Core {
 
 std::shared_ptr<Core::ShaderAsset> Core::AssetManager::default_shader;
 std::shared_ptr<Core::ShaderAsset> Core::AssetManager::error_shader;
+std::shared_ptr<Core::MaterialAsset> Core::AssetManager::default_material;
+std::shared_ptr<Core::MaterialAsset> Core::AssetManager::error_material;
 
 struct ParsedMesh {
 	std::vector<Renderer::Vertex> vertices;
@@ -55,12 +58,19 @@ Core::AssetID Core::AssetManager::ImportAsset(const std::string& path)
 
 	if (!default_shader.get())
 	{
-		AssetID shader_ID = ImportShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\default_vert.glsl");
-		default_shader = GetAsset<ShaderAsset>(shader_ID);
+		AssetID default_shader_ID = ImportShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\default_vert.glsl");
+		default_shader = GetAsset<ShaderAsset>(default_shader_ID);
 
 		AssetID error_shader_ID = ImportShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\default_vert.glsl");
 		error_shader = GetAsset<ShaderAsset>(error_shader_ID);
 
+		s_nextID++;
+		default_material = std::make_shared<MaterialAsset>("Default Material", s_nextID, default_shader);
+		m_assets[s_nextID] = default_material;
+
+		s_nextID++;
+		error_material = std::make_shared<MaterialAsset>("Error Material", s_nextID, error_shader);
+		m_assets[s_nextID] = error_material;
 		//TODO : move this to the startup of the engine
 	}
 
@@ -227,7 +237,7 @@ Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
 			s_nextID,
 			mesh.vertices,
 			mesh.indices,
-			default_shader
+			default_material
 		);
 
 		m_assets[s_nextID] = mesh_asset;

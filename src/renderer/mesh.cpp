@@ -4,8 +4,8 @@
 
 #include <glad/glad.h>
 
-Renderer::Mesh::Mesh(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices, std::weak_ptr<Shader> _shader):
-	m_vertices(_vertices), m_indices(_indices), m_shader(_shader)
+Renderer::Mesh::Mesh(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices, std::weak_ptr<Core::MaterialAsset> _material):
+	m_vertices(_vertices), m_indices(_indices), m_material(_material) // TODO : Secure the material initialisation (make shared_ptr instead or at least look if the weak_ptr is still initalised)
 {
 #pragma region OpenGL
 	glGenVertexArrays(1, &VAO);
@@ -138,13 +138,12 @@ Renderer::Mesh* Renderer::Mesh::CreateCube()
 
 void Renderer::Mesh::Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective)
 {
-    if (m_shader.lock())
+    if (std::shared_ptr<Core::MaterialAsset> _mat = m_material.lock())
     {
-        m_shader.lock()->Bind();
-        m_shader.lock()->SetMat4("view", _view);
-        m_shader.lock()->SetMat4("model", _model);
-        m_shader.lock()->SetMat4("perspective", _perspective);
-        // TODO : make so the MaterialAsset actually deals with the parameters (once it's implemented)
+        _mat->Bind();
+        _mat->SetUniform("view", _view);
+        _mat->SetUniform("model", _model);
+        _mat->SetUniform("perspective", _perspective);
     }
 
     // TODO : Create default shader when shader is not valid anymore

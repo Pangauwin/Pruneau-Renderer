@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <sstream>
 #include <iomanip>
+#include <variant>
 
 #include "../core/application.h"
 #include "renderer/renderer.h"
@@ -29,9 +30,9 @@ static char command[CONSOLE_COMMAND_MAX_SIZE];
 
 static ImTextureID file_icon = 0;
 
-static Core::Entity* selected_entity = nullptr;
+using UISelectObject = std::variant<std::monostate, Core::Entity*, Core::AssetID>;
 
-static bool show_add_component_window = false;
+UISelectObject selected_object;
 
 static void DrawEntityNode(Core::Entity* _entity);
 
@@ -152,13 +153,16 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
     for(auto& it : Core::AssetManager::GetAssets())
     {
-        if (ImGui::Button(it.second.get()->GetName().c_str(), ImVec2(64, 64)))
+        if (ImGui::ButtonEx(it.second.get()->GetName().c_str(), ImVec2(64, 64)))
         {
+            // TODO : Replace this with drag and drop (or right click menu)
             if (auto model = std::dynamic_pointer_cast<Core::ModelAsset>(it.second))
             {
                 Core::Entity* _ent = _level->CreateEntity("Model", nullptr);
                 _ent->AddComponent<Core::ModelRenderer>((Renderer::Model*)model->GetModel());
             }
+
+            selected_object = it.first;
         }
     }
 
@@ -209,49 +213,71 @@ void EngineLayer::EngineLayer::OnGUIRender()
 #pragma region Inspector
     ImGui::Begin("Inspector");
 
-    if (selected_entity)
+    std::visit([](auto&& arg)
     {
-        ImGui::BulletText(selected_entity->name.c_str());
+            using T = std::decay_t<decltype(arg)>;
 
-        for (auto& i : selected_entity->components)
-        {
-            std::string comp_name = typeid(*i.second.get()).name();
-
-            std::string result = comp_name.substr(comp_name.find_last_of(":") + 1);
-
-            ImGui::BeginGroup();
-
-            bool enabled = true; // TODO : Implement Component enable
-            ImGui::Checkbox("##enabled", &enabled);
-
-            ImGui::SameLine();
-
-            if (ImGui::CollapsingHeader(result.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+            if constexpr (std::is_same_v<T, Core::Entity*>)
             {
-                i.second.get()->OnEditorRender();
-            }
-            
-            ImGui::EndGroup();
-        }
-        
-        if (ImGui::Button("Add Component"))
-            ImGui::OpenPopup("AddComponentPopup");
-
-        if (ImGui::BeginPopup("AddComponentPopup"))
-        {
-            for (const auto& [type, info] : Core::ComponentRegistry::All())
-            {
-                if (ImGui::MenuItem(info.name.c_str()) && !(selected_entity->components[type]))
+                if (arg)
                 {
-                    selected_entity->components[type] = info.factory(selected_entity);
-                    ImGui::CloseCurrentPopup();
+                    Core::Entity* selected_entity = arg;
+                    ImGui::BulletText(selected_entity->name.c_str());
+
+                    for (auto& i : selected_entity->components)
+                    {
+                        std::string comp_name = typeid(*i.second.get()).name();
+
+                        std::string result = comp_name.substr(comp_name.find_last_of(":") + 1);
+
+                        ImGui::BeginGroup();
+
+                        bool enabled = true; // TODO : Implement Component enable
+                        ImGui::Checkbox("##enabled", &enabled);
+
+                        ImGui::SameLine();
+
+                        if (ImGui::CollapsingHeader(result.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+                        {
+                            i.second.get()->OnEditorRender();
+                        }
+
+                        ImGui::EndGroup();
+                    }
+
+                    if (ImGui::Button("Add Component"))
+                        ImGui::OpenPopup("AddComponentPopup");
+
+                    if (ImGui::BeginPopup("AddComponentPopup"))
+                    {
+                        for (const auto& [type, info] : Core::ComponentRegistry::All())
+                        {
+                            if (ImGui::MenuItem(info.name.c_str()) && !(selected_entity->components[type]))
+                            {
+                                selected_entity->components[type] = info.factory(selected_entity);
+                                ImGui::CloseCurrentPopup();
+                            }
+                        }
+
+                        ImGui::EndPopup();
+                    }
                 }
             }
 
-            ImGui::EndPopup();
-        }
+            else if constexpr (std::is_same_v<T, Core::AssetID>)
+            {
+                std::shared_ptr<Core::Asset> _asset = Core::AssetManager::GetAsset<Core::Asset>(arg);
+                ImGui::BulletText(_asset->GetName().c_str());
 
-    }
+                _asset->OnGUIRender();
+            }
+
+            else if constexpr (std::is_same_v<T, std::monostate>)
+            {
+                ImGui::Text("Nothing Selected");
+            }
+
+    }, selected_object);
 
     ImGui::End();
 #pragma endregion
@@ -363,49 +389,52 @@ void EngineLayer::EngineLayer::OnGUIRender()
         std::vector<Core::Camera*> cameras = Core::Application::Get()->m_renderer.get()->m_cameras;
         int camera_index = Core::Application::Get()->m_renderer.get()->m_camera_index;
 
-        if (selected_entity && cameras.size() != 0 && selected_entity != cameras[camera_index]->GetOwner())
+        if (Core::Entity** selected_entity = std::get_if<Core::Entity*>(&selected_object))
         {
-            if (camera_index >= cameras.size())
+            if ((cameras.size() != 0 && *selected_entity != cameras[camera_index]->GetOwner()))
             {
-                //TODO : Log error
-            }
+                if (camera_index >= cameras.size())
+                {
+                    //TODO : Log error
+                }
 
-            Core::Transform* camera_transform = cameras[camera_index]->GetOwner()->GetComponent<Core::Transform>();
-            glm::mat4* projection = cameras[camera_index]->GetPerspective();
+                Core::Transform* camera_transform = cameras[camera_index]->GetOwner()->GetComponent<Core::Transform>();
+                glm::mat4* projection = cameras[camera_index]->GetPerspective();
 
-            Core::Transform* transform =
-                selected_entity->GetComponent<Core::Transform>();
+                Core::Transform* transform =
+                    (*selected_entity)->GetComponent<Core::Transform>();
 
-            glm::mat4 world = transform->GetWorldTransformMatrix();
+                glm::mat4 world = transform->GetWorldTransformMatrix();
 
-            glm::mat4 view =
-                glm::inverse(camera_transform->GetWorldTransformMatrix());
+                glm::mat4 view =
+                    glm::inverse(camera_transform->GetWorldTransformMatrix());
 
-            ImGuizmo::Manipulate(
-                glm::value_ptr(view),
-                glm::value_ptr(*projection),
-                imguizmo_operation,
-                imguizmo_mode,
-                glm::value_ptr(world)
-            );
-
-            if (ImGuizmo::IsUsing())
-            {
-                glm::vec3 translation, rotation, scale;
-
-                ImGuizmo::DecomposeMatrixToComponents(
-                    glm::value_ptr(world),
-                    glm::value_ptr(translation),
-                    glm::value_ptr(rotation),
-                    glm::value_ptr(scale)
+                ImGuizmo::Manipulate(
+                    glm::value_ptr(view),
+                    glm::value_ptr(*projection),
+                    imguizmo_operation,
+                    imguizmo_mode,
+                    glm::value_ptr(world)
                 );
 
-                glm::vec3 radians = glm::radians(rotation);
-                glm::quat quat = glm::quat(radians);
+                if (ImGuizmo::IsUsing())
+                {
+                    glm::vec3 translation, rotation, scale;
 
-                transform->SetPosition(translation);
-                transform->SetRotation(quat);
-                transform->SetScale(scale);
+                    ImGuizmo::DecomposeMatrixToComponents(
+                        glm::value_ptr(world),
+                        glm::value_ptr(translation),
+                        glm::value_ptr(rotation),
+                        glm::value_ptr(scale)
+                    );
+
+                    glm::vec3 radians = glm::radians(rotation);
+                    glm::quat quat = glm::quat(radians);
+
+                    transform->SetPosition(translation);
+                    transform->SetRotation(quat);
+                    transform->SetScale(scale);
+                }
             }
         }
 #pragma endregion
@@ -442,21 +471,44 @@ void EngineLayer::EngineLayer::OnEvent(Core::Event& _event)
     // TODO : FIX THIS !!!!! We should check if the input is keyboard or mouse before handling it ! Here it also intercepts events such as file drops, etc...
     // Actually, it intercepts all events marked as Core::event_category_input
     // We should also modify the condition as we want input inside the scene window (holding the framebuffer)
-	if (_event.IsInCategory(Core::event_category_input))
-	{
+    if (_event.IsInCategory(Core::event_category_input))
+    {
         if (ImGuizmo::IsUsing())
         {
             _event.handled = true;
             return;
         }
 
-		ImGuiIO& io = ImGui::GetIO();
+        ImGuiIO& io = ImGui::GetIO();
         if (io.WantCaptureKeyboard || io.WantCaptureMouse)
         {
             _event.handled = true;  // Block input if ImGui is capturing it
+            // TODO : Fix that and make the lock icon on the inspector
+            //if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
+                //selected_entity = nullptr;
+
+            //TODO : Fix Input
+            /*
+            if (ImGui::IsAnyItemFocused())
+                return;
+
+            if (ImGui::IsKeyPressed(ImGuiKey_T))
+            {
+                imguizmo_operation = ImGuizmo::TRANSLATE;
+            }
+            else if (ImGui::IsKeyPressed(ImGuiKey_R))
+            {
+                imguizmo_operation = ImGuizmo::ROTATE;
+            }
+            else if (ImGui::IsKeyPressed(ImGuiKey_S))
+            {
+                imguizmo_operation = ImGuizmo::SCALE;
+            }
+            */
+
             return;
         }
-	}
+    }
 }
 
 void EngineLayer::EngineLayer::LogMessage(std::string _message)
@@ -477,7 +529,7 @@ static void DrawEntityNode(Core::Entity* _entity)
 
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
     {
-        selected_entity = _entity;
+        selected_object = _entity;
     }
 
     if (open)
