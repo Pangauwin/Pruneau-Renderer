@@ -60,6 +60,8 @@ Renderer::Renderer::Renderer(Platform::Window* _window) :
 	_current_renderer = this;
 
 	// Credits to enemymouse : https://github.com/enemymouse
+	// TODO : Make so that we can choose the theme in the preferences settings
+	/*
 #pragma region ImGuiRestyling
 	style.Alpha = 1.0;
 	//style.WindowFillAlphaDefault = 0.83;
@@ -114,6 +116,7 @@ Renderer::Renderer::Renderer(Platform::Window* _window) :
 	//style.Colors[ImGuiCol_TooltipBg] = ImVec4(0.00f, 0.13f, 0.13f, 0.90f);
 	//style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.04f, 0.10f, 0.09f, 0.51f);
 #pragma endregion
+	*/
 }
 
 Renderer::Renderer::~Renderer()
@@ -149,7 +152,7 @@ void Renderer::Renderer::PreRender()
 {
 	m_frame_buffer.Bind();
 
-	glClearColor(0.00f, 0.50f, 0.50f, 1.0f);
+	glClearColor(0.00f, 0.00f, 0.70f, 1.0f);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
