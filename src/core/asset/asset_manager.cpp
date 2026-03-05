@@ -56,24 +56,6 @@ Core::AssetID Core::AssetManager::ImportAsset(const std::string& path)
 {
 	AssetID id = 0;
 
-	if (!default_shader.get())
-	{
-		AssetID default_shader_ID = ImportShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\default_vert.glsl");
-		default_shader = GetAsset<ShaderAsset>(default_shader_ID);
-
-		AssetID error_shader_ID = ImportShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\default_vert.glsl");
-		error_shader = GetAsset<ShaderAsset>(error_shader_ID);
-
-		s_nextID++;
-		default_material = std::make_shared<MaterialAsset>("Default Material", s_nextID, default_shader);
-		m_assets[s_nextID] = default_material;
-
-		s_nextID++;
-		error_material = std::make_shared<MaterialAsset>("Error Material", s_nextID, error_shader);
-		m_assets[s_nextID] = error_material;
-		//TODO : move this to the startup of the engine
-	}
-
 	if (EndsWith(path, ".obj") || EndsWith(path, ".gltf") || EndsWith(path, ".glb") || EndsWith(path, ".fbx"))
 	{
 		id = ImportModel(path);
@@ -104,6 +86,40 @@ Core::AssetID Core::AssetManager::ImportAsset(const std::string& path)
 void Core::AssetManager::RemoveAsset(AssetID _id)
 {
 	Core::AssetManager::m_assets.erase(_id);
+}
+
+void Core::AssetManager::SetDefaultShader(const char* _path)
+{
+	AssetID default_shader_ID = ImportShader(_path);
+	default_shader = GetAsset<ShaderAsset>(default_shader_ID);
+	if (!default_material.get())
+	{
+		s_nextID++;
+		default_material = std::make_shared<MaterialAsset>("Default Material", s_nextID, default_shader);
+		m_assets[s_nextID] = default_material;
+	}
+	else
+	{
+		AssetID default_material_ID = default_material->GetID();
+		default_material = std::make_shared<MaterialAsset>("Default Material", default_material_ID, default_shader);
+	}
+}
+
+void Core::AssetManager::SetErrorShader(const char* _path)
+{
+	AssetID error_shader_ID = ImportShader(_path);
+	error_shader = GetAsset<ShaderAsset>(error_shader_ID);
+	if (!error_material.get())
+	{
+		s_nextID++;
+		error_material = std::make_shared<MaterialAsset>("Error Material", s_nextID, error_shader);
+		m_assets[s_nextID] = error_material;
+	}
+	else
+	{
+		AssetID error_material_ID = default_material->GetID();
+		error_material = std::make_shared<MaterialAsset>("Error Material", error_material_ID, error_shader);
+	}
 }
 
 Core::AssetID Core::AssetManager::ImportModel(const std::string& _path)

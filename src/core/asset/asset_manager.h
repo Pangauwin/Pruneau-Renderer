@@ -8,10 +8,14 @@ struct ParsedModel;
 
 namespace Core {
 
+class Application;
+
 // TODO : Import Settings / Preferences
 
 class AssetManager
 {
+	friend class Application; // default/error materials and shader imports
+
 public:
 	template<typename T>
 	static std::shared_ptr<T> GetAsset(AssetID _id);
@@ -30,6 +34,9 @@ public:
 
 private:
 	AssetManager() = default;
+
+	static void SetDefaultShader(const char* _path);
+	static void SetErrorShader(const char* _path);
 
 #pragma region ModelLoading
 	static AssetID ImportModel(const std::string& _path);

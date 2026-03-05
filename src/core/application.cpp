@@ -13,8 +13,9 @@
 
 #include "core/time.h"
 
-static float dt = 0.00001f;
-static float time = 0.0f;
+#include "asset/asset_manager.h"
+
+static float dt = 0.00001f; // Avoid 0 divisions errors
 
 static Core::Application* current_application;
 
@@ -34,6 +35,10 @@ Core::Application::Application(AppParams _params) :
 	new LevelManager();
 
 	PushOverlay(m_engine_layer);
+
+	// Import default assets
+	AssetManager::SetDefaultShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\default_vert.glsl");
+	AssetManager::SetErrorShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\error_vert.glsl");
 }
 
 Core::Application::~Application()
@@ -52,7 +57,7 @@ void Core::Application::Run()
 		PollEvents();
 		m_window->SwapBuffers();
 
-		dt = CalculateDeltaTime();
+		dt = Time::delta_time;
 
 		for (Layer* _layer : m_layer_stack)
 			_layer->OnUpdate(dt);
@@ -130,14 +135,6 @@ void Core::Application::LogMessage(std::string _message)
 void Core::Application::PollEvents()
 {
 	m_window->PollEvents();
-}
-
-float Core::Application::CalculateDeltaTime()
-{
-	float previous_time = time;
-	time = m_window.get()->GetTime();
-	dt = time - previous_time;
-	return dt;
 }
 
 void Core::Application::OnClose()

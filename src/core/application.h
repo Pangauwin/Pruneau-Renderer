@@ -36,7 +36,6 @@ public:
 
 private:
 	void PollEvents();
-	float CalculateDeltaTime();
 
 private:
 	void OnClose();
