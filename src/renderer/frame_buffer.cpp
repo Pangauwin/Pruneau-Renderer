@@ -122,7 +122,7 @@ void Renderer::Framebuffer::Invalidate()
             error_msg = "UNKNOWN (" + status + (std::string)")";
         }
 
-        Core::Application::Get()->LogMessage(error_msg);
+        Core::LogMessage(error_msg);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

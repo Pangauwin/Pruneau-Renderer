@@ -22,7 +22,10 @@ static glm::mat4 ConvertMatrix(const aiMatrix4x4& m);
 
 namespace Core {
 	std::unordered_map<AssetID, std::shared_ptr<Asset>> AssetManager::m_assets;
-	AssetID AssetManager::s_nextID = 0;
+	std::unordered_map<FolderID, std::unique_ptr<AssetFolder>> AssetManager::m_folders;
+
+	AssetID AssetManager::s_next_asset_id = 0;
+	FolderID AssetManager::s_next_folder_id = 0;
 }
 
 std::shared_ptr<Core::ShaderAsset> Core::AssetManager::default_shader;
@@ -52,7 +55,22 @@ static void ParseMaterials(const aiScene* _scene, ParsedModel& _model);
 static void ParseNode(aiNode* node, const aiScene* scene, const glm::mat4& _parent_transform, ParsedModel& _model);
 static ParsedMesh ParseMesh(aiMesh* _mesh);
 
-Core::AssetID Core::AssetManager::ImportAsset(const std::string& path)
+void Core::AssetManager::Init()
+{
+	AssetFolder _folder;
+	_folder.id = s_next_folder_id;
+	_folder.name = "Assets";
+	_folder.parent = 0;
+
+	m_folders[s_next_folder_id] = std::make_unique<AssetFolder>(_folder);
+
+
+	// Import default assets
+	AssetManager::SetDefaultShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\default_vert.glsl");
+	AssetManager::SetErrorShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\error_vert.glsl");
+}
+
+Core::AssetID Core::AssetManager::ImportAsset(const std::string& path, FolderID _folder)
 {
 	AssetID id = 0;
 
@@ -79,6 +97,8 @@ Core::AssetID Core::AssetManager::ImportAsset(const std::string& path)
 
 	if (!id)
 		Core::LogMessage("Could not import asset:" + path);
+	
+	AssignAssetToFolder(id, _folder);
 
 	return id;
 }
@@ -88,15 +108,47 @@ void Core::AssetManager::RemoveAsset(AssetID _id)
 	Core::AssetManager::m_assets.erase(_id);
 }
 
+Core::FolderID Core::AssetManager::CreateFolder(const std::string& _name, FolderID _parent)
+{
+	s_next_folder_id++;
+
+	AssetFolder _folder;
+	_folder.id = s_next_folder_id;
+	_folder.name = _name;
+	_folder.parent = _parent;
+
+	m_folders[s_next_folder_id] = std::make_unique<AssetFolder>(_folder);
+	m_folders[_parent]->children.push_back(m_folders[s_next_folder_id].get());
+
+	return s_next_folder_id;
+}
+
+Core::AssetFolder& Core::AssetManager::GetFolder(FolderID _id)
+{
+	if (m_folders.count(_id))
+	{
+		return *m_folders[_id].get();
+	}
+
+	return *m_folders[0].get();
+}
+
+void Core::AssetManager::AssignAssetToFolder(AssetID _asset_id, FolderID _folder_id)
+{
+	std::shared_ptr<Asset> _asset = GetAsset<Asset>(_asset_id);
+	_asset->folder = _folder_id;
+	GetFolder(_folder_id).assets.push_back(_asset);
+}
+
 void Core::AssetManager::SetDefaultShader(const char* _path)
 {
-	AssetID default_shader_ID = ImportShader(_path);
+	AssetID default_shader_ID = ImportAsset(_path);
 	default_shader = GetAsset<ShaderAsset>(default_shader_ID);
 	if (!default_material.get())
 	{
-		s_nextID++;
-		default_material = std::make_shared<MaterialAsset>("Default Material", s_nextID, default_shader);
-		m_assets[s_nextID] = default_material;
+		s_next_asset_id++;
+		default_material = std::make_shared<MaterialAsset>("Default Material", s_next_asset_id, default_shader);
+		m_assets[s_next_asset_id] = default_material;
 	}
 	else
 	{
@@ -107,13 +159,13 @@ void Core::AssetManager::SetDefaultShader(const char* _path)
 
 void Core::AssetManager::SetErrorShader(const char* _path)
 {
-	AssetID error_shader_ID = ImportShader(_path);
+	AssetID error_shader_ID = ImportAsset(_path);
 	error_shader = GetAsset<ShaderAsset>(error_shader_ID);
 	if (!error_material.get())
 	{
-		s_nextID++;
-		error_material = std::make_shared<MaterialAsset>("Error Material", s_nextID, error_shader);
-		m_assets[s_nextID] = error_material;
+		s_next_asset_id++;
+		error_material = std::make_shared<MaterialAsset>("Error Material", s_next_asset_id, error_shader);
+		m_assets[s_next_asset_id] = error_material;
 	}
 	else
 	{
@@ -246,17 +298,17 @@ Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
 
 	for (const ParsedMesh& mesh : parsed.meshes)
 	{
-		s_nextID++;
+		s_next_asset_id++;
 
 		auto mesh_asset = std::make_shared<MeshAsset>(
-			"Mesh_" + std::to_string(s_nextID),
-			s_nextID,
+			"Mesh_" + std::to_string(s_next_asset_id),
+			s_next_asset_id,
 			mesh.vertices,
 			mesh.indices,
 			default_material
 		);
 
-		m_assets[s_nextID] = mesh_asset;
+		m_assets[s_next_asset_id] = mesh_asset;
 
 		std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>> _t;
 
@@ -265,17 +317,17 @@ Core::AssetID Core::AssetManager::BuildModelAsset(const ParsedModel& parsed)
 		_model_mesh_container.push_back(_t);
 	}
 
-	s_nextID++;
+	s_next_asset_id++;
 
 	auto model = std::make_shared<ModelAsset>(
-		"Model_" + std::to_string(s_nextID),
-		s_nextID,
+		"Model_" + std::to_string(s_next_asset_id),
+		s_next_asset_id,
 		_model_mesh_container
 	);
 
-	m_assets[s_nextID] = model;
+	m_assets[s_next_asset_id] = model;
 
-	return s_nextID;
+	return s_next_asset_id;
 }
 
 Core::AssetID Core::AssetManager::ImportTexture(const std::string& path)
@@ -289,12 +341,12 @@ Core::AssetID Core::AssetManager::ImportTexture(const std::string& path)
 		return 0;
 	}
 
-	s_nextID++;
-	Core::AssetManager::m_assets[s_nextID] = std::make_shared<TextureAsset>("Texture_" + s_nextID, s_nextID, data, width, height);
+	s_next_asset_id++;
+	Core::AssetManager::m_assets[s_next_asset_id] = std::make_shared<TextureAsset>("Texture_" + s_next_asset_id, s_next_asset_id, data, width, height);
 
 	stbi_image_free(data);
 
-	return s_nextID;
+	return s_next_asset_id;
 }
 
 Core::AssetID Core::AssetManager::ImportShader(const std::string& path)
@@ -346,10 +398,10 @@ Core::AssetID Core::AssetManager::ImportShader(const std::string& path)
 	fragment_shader_contents << fragment_file.rdbuf();
 	fragment_shader = fragment_shader_contents.str();
 
-	s_nextID++;
-	Core::AssetManager::m_assets[s_nextID] = std::make_shared<ShaderAsset>("Shader_" + std::to_string(s_nextID), s_nextID, vertex_shader.c_str(), fragment_shader.c_str());
+	s_next_asset_id++;
+	Core::AssetManager::m_assets[s_next_asset_id] = std::make_shared<ShaderAsset>("Shader_" + std::to_string(s_next_asset_id), s_next_asset_id, vertex_shader.c_str(), fragment_shader.c_str());
 
-	return s_nextID;
+	return s_next_asset_id;
 }
 
 static bool EndsWith(const std::string& value, const std::string& ending)

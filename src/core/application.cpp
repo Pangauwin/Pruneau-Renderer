@@ -21,7 +21,27 @@ static Core::Application* current_application;
 
 void Core::LogMessage(std::string _message)
 {
-	Core::Application::Get()->LogMessage(_message);
+	Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_NONE);
+}
+
+void Core::LogMessageDebug(std::string _message)
+{
+	Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_DEBUG);
+}
+
+void Core::LogMessageInfo(std::string _message)
+{
+	Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_INFO);
+}
+
+void Core::LogMessageWarning(std::string _message)
+{
+	Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_WARNING);
+}
+
+void Core::LogMessageError(std::string _message)
+{
+	Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_ERROR);
 }
 
 Core::Application::Application(AppParams _params) : 
@@ -33,12 +53,9 @@ Core::Application::Application(AppParams _params) :
 	current_application = this;
 
 	new LevelManager();
+	AssetManager::Init();
 
 	PushOverlay(m_engine_layer);
-
-	// Import default assets
-	AssetManager::SetDefaultShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\default_vert.glsl");
-	AssetManager::SetErrorShader("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\error_vert.glsl");
 }
 
 Core::Application::~Application()
@@ -127,9 +144,9 @@ Core::Application* Core::Application::Get()
 	return current_application;
 }
 
-void Core::Application::LogMessage(std::string _message)
+void Core::Application::LogMessage(std::string _message, EngineLayer::LOG_PRIORITY _priority)
 {
-	m_engine_layer->LogMessage(_message);
+	m_engine_layer->LogMessage(_message, _priority);
 }
 
 void Core::Application::PollEvents()

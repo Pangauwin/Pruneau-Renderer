@@ -8,6 +8,20 @@ struct ParsedModel;
 
 namespace Core {
 
+using FolderID = uint32_t;
+
+struct AssetFolder {
+	FolderID id;
+
+	std::string name;
+	// TODO : Implement folder color
+
+	FolderID parent = 0;
+
+	std::vector<std::shared_ptr<Core::Asset>> assets;
+	std::vector<AssetFolder*> children;
+};
+
 class Application;
 
 // TODO : Import Settings / Preferences
@@ -17,10 +31,27 @@ class AssetManager
 	friend class Application; // default/error materials and shader imports
 
 public:
+
+	static void Init();
+
+#pragma region Folders
+	static FolderID CreateFolder(const std::string& name, FolderID parent = 0);
+	static AssetFolder& GetFolder(FolderID _id);
+	static void AssignAssetToFolder(AssetID _asset_id, FolderID _folder_id);
+
+	static void InitializeRootFolder()
+	{
+		if (m_folders.empty())
+			CreateFolder("Root", 0);
+	}
+
+#pragma endregion
+
+#pragma region Assets
 	template<typename T>
 	static std::shared_ptr<T> GetAsset(AssetID _id);
 
-	static AssetID ImportAsset(const std::string& path); // TODO : separate asset importer (create AssetImporter class)
+	static AssetID ImportAsset(const std::string& path, FolderID _folder = 0); // TODO : separate asset importer (create AssetImporter class)
 
 	static void RemoveAsset(AssetID _id);
 
@@ -31,6 +62,8 @@ public:
 
 	static std::shared_ptr<MaterialAsset> default_material;
 	static std::shared_ptr<MaterialAsset> error_material;
+#pragma endregion
+
 
 private:
 	AssetManager() = default;
@@ -53,8 +86,10 @@ private:
 #pragma endregion
 
 	static std::unordered_map<AssetID, std::shared_ptr<Asset>> m_assets;
+	static std::unordered_map<AssetID, std::unique_ptr<AssetFolder>> m_folders;
 
-	static AssetID s_nextID;
+	static FolderID s_next_folder_id;
+	static AssetID s_next_asset_id;
 };
 
 }

@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 
+#include <misc/cpp/imgui_stdlib.cpp>
+
 #include "asset_manager.h"
 
 #include "core/application.h"
@@ -76,7 +78,16 @@ Core::ModelAsset::ModelAsset(std::string _name, AssetID _id, std::vector<std::tu
 
 void Core::ModelAsset::OnGUIRender()
 {
+	if (ImGui::InputText(("Asset Name##" + std::to_string(GetID())).c_str(), &name));
+
 	ImGui::Text(("Asset ID: " + std::to_string(GetID())).c_str());
+
+	ImGui::Text("Internal meshes ids: ");
+	for (auto& _mesh : m_model->GetMeshes())
+	{
+		std::shared_ptr<MeshAsset> _asset = std::get<std::shared_ptr<MeshAsset>>(_mesh);
+		ImGui::BulletText(_asset->GetName().c_str());
+	}
 }
 
 #pragma endregion

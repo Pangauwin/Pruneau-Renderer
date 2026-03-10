@@ -14,7 +14,7 @@ static int frame_counter = 0;
 
 void Time::Init()
 {
-	last_frame_time = Core::Application::Get()->m_window->GetTime(); // TODO : Simplify (a lot)
+	last_frame_time = Core::Application::Get()->m_window->GetTime();
 }
 
 void Time::Update()

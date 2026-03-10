@@ -30,6 +30,7 @@ namespace Core {
 */
 
 using AssetID = uint32_t;
+using FolderID = uint32_t;
 
 class Asset
 {
@@ -43,8 +44,11 @@ public:
 
 	virtual void OnGUIRender() {}
 
-private:
+public:
 	std::string name;
+	FolderID folder = 0;
+
+private:
 	AssetID m_id;
 };
 

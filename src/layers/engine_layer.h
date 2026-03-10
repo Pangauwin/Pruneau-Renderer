@@ -5,8 +5,18 @@
 
 #include <vector>
 #include <string>
+#include <tuple>
 
 namespace EngineLayer {
+
+enum LOG_PRIORITY {
+	LOG_PRIORITY_NONE = 0,
+
+	LOG_PRIORITY_DEBUG,
+	LOG_PRIORITY_INFO,
+	LOG_PRIORITY_WARNING,
+	LOG_PRIORITY_ERROR,
+};
 
 class EngineLayer : public Core::Layer
 {
@@ -17,13 +27,13 @@ public:
 	void OnGUIRender() override;
 	void OnEvent(Core::Event& _event) override;
 
-	void LogMessage(std::string _message);
+	void LogMessage(std::string _message, LOG_PRIORITY _priority);
 	// TODO : Create a clear function
 
 	// TODO : Create a editor layout contains the editor features (such as drop file in the OnEvent() function etc...)
 
 private:
-	std::vector<std::string> m_message_pool; // TODO : Create a message type in order to store more information about the message (error, warning, etc...)
+	std::vector<std::tuple<LOG_PRIORITY, std::string>> m_message_pool; // TODO : Create a message type in order to store more information about the message (error, warning, etc...)
 };
 
 }

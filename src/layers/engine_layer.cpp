@@ -11,37 +11,69 @@
 #include "renderer/renderer.h"
 #include "../core/event/event_dispatcher.h"
 
+#include "renderer/texture.h"
+
 #include "core/event/events/file_drop.h"
 
 #include "core/asset/asset_manager.h"
 
 #include "core/level_manager.h"
 
-#include <imgui.h>
 #include <ImGuizmo.h>
 #include <imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "core/time.h"
 
+
+#pragma region DEFINES
+
 #define CONSOLE_COMMAND_MAX_SIZE 512
 
 static char command[CONSOLE_COMMAND_MAX_SIZE];
-
-static ImTextureID file_icon = 0;
 
 using UISelectObject = std::variant<std::monostate, Core::Entity*, Core::AssetID>;
 
 UISelectObject selected_object;
 
-static void DrawEntityNode(Core::Entity* _entity);
+#pragma region Icons
+
+struct EditorIcons {
+    ImTextureID folder_icon;
+    ImTextureID file_icon;
+    ImTextureID texture_icon;
+    ImTextureID model_icon;
+};
+
+static EditorIcons icons;
+
+#pragma endregion
+
 
 static ImGuizmo::OPERATION imguizmo_operation(ImGuizmo::TRANSLATE);
 static ImGuizmo::MODE imguizmo_mode(ImGuizmo::LOCAL);
 
+#pragma region Functions
+static void DrawEntityNode(Core::Entity* _entity);
+#pragma endregion
+
+#pragma endregion
+
+struct AssetExplorerState {
+    Core::FolderID _current_folder = 0;
+};
+
+AssetExplorerState _state;
+
 void EngineLayer::EngineLayer::OnAttach()
 {
-	
+    Core::AssetID file_icon_asset = Core::AssetManager::ImportAsset("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\icons\\file.png");
+    Core::AssetID folder_icon_asset = Core::AssetManager::ImportAsset("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\icons\\folder.png");
+
+    icons.file_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(file_icon_asset)->GetTexture()->GetID();
+    icons.model_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(file_icon_asset)->GetTexture()->GetID();
+    icons.texture_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(file_icon_asset)->GetTexture()->GetID();
+    icons.folder_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(folder_icon_asset)->GetTexture()->GetID();
 }
 
 void EngineLayer::EngineLayer::OnGUIRender()
@@ -130,15 +162,34 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
 	ImGui::Begin("Console");
 
-    for (std::string message : m_message_pool)
+    for (std::tuple<LOG_PRIORITY, std::string>& message : m_message_pool)
     {
-        ImGui::Text(message.c_str());
+        LOG_PRIORITY _priority = std::get<LOG_PRIORITY>(message);
+
+        if(_priority == LOG_PRIORITY_NONE)
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, 255));
+
+        else if (_priority == LOG_PRIORITY_DEBUG)
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 102, 0, 255));
+
+        else if (_priority == LOG_PRIORITY_INFO)
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(102, 178, 255, 255));
+
+        else if (_priority == LOG_PRIORITY_WARNING)
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 0, 255));
+
+        else if (_priority == LOG_PRIORITY_ERROR)
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(204, 0, 0, 255));
+
+        ImGui::Text(std::get<std::string>(message).c_str());
+
+        ImGui::PopStyleColor();
     }
 
     if (ImGui::InputText("command", command, CONSOLE_COMMAND_MAX_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
     {
         // TODO : Interpret the command and log the result instead of the command
-        LogMessage(command);
+        Core::LogMessage(command);
     }
 
     ImGui::SetScrollHereY(1.0f);
@@ -147,26 +198,26 @@ void EngineLayer::EngineLayer::OnGUIRender()
 #pragma endregion
 
 #pragma region AssetExplorer
+
     ImGui::Begin("Asset Explorer");
 
-    ImGui::BeginGroup();
+    Core::AssetFolder& _current_folder = Core::AssetManager::GetFolder(_state._current_folder);
 
-    for(auto& it : Core::AssetManager::GetAssets())
+    for (Core::AssetFolder* _folder : _current_folder.children)
     {
-        if (ImGui::ButtonEx(it.second.get()->GetName().c_str(), ImVec2(64, 64)))
+        if (ImGui::ImageButton(std::to_string(_folder->id).c_str(), icons.folder_icon, { 16.0f, 16.0f }))
         {
-            // TODO : Replace this with drag and drop (or right click menu)
-            if (auto model = std::dynamic_pointer_cast<Core::ModelAsset>(it.second))
-            {
-                Core::Entity* _ent = _level->CreateEntity("Model", nullptr);
-                _ent->AddComponent<Core::ModelRenderer>((Renderer::Model*)model->GetModel());
-            }
-
-            selected_object = it.first;
+            _state._current_folder = _folder->id;
         }
     }
 
-    ImGui::EndGroup();
+    for (std::shared_ptr<Core::Asset> _asset : _current_folder.assets)
+    {
+        if (ImGui::ImageButton(std::to_string(_asset->GetID()).c_str(), icons.file_icon, { 16.0f, 16.0f }))
+        {
+            selected_object = _asset->GetID();
+        }
+    }
 
     ImGui::End();
 
@@ -210,8 +261,8 @@ void EngineLayer::EngineLayer::OnGUIRender()
     ImGui::End();
 #pragma endregion
 
-#pragma region Inspector
-    ImGui::Begin("Inspector");
+#pragma region Properties
+    ImGui::Begin("Properties");
 
     std::visit([](auto&& arg)
     {
@@ -261,6 +312,11 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
                         ImGui::EndPopup();
                     }
+                }
+
+                else
+                {
+                    ImGui::BulletText("Not valid Entity selected");
                 }
             }
 
@@ -375,9 +431,6 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
 #pragma region Guizmo
         ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
-        
-        //TODO : deal with that (I don't know how exactly but still it works
-        //ImGuizmo::SetOrthographic(false);
 
         ImGuizmo::SetRect(
             image_min.x,
@@ -458,8 +511,8 @@ void EngineLayer::EngineLayer::OnEvent(Core::Event& _event)
             {
                 std::filesystem::path p(path);
 
-                Core::AssetManager::ImportAsset(path.c_str());
-                LogMessage("Asset imported : " + path);
+                Core::AssetManager::ImportAsset(path.c_str(), _state._current_folder);
+                Core::LogMessage("Asset imported : " + path);
             }
 
             // TODO : Return false if import failed/pass to another layer
@@ -511,9 +564,11 @@ void EngineLayer::EngineLayer::OnEvent(Core::Event& _event)
     }
 }
 
-void EngineLayer::EngineLayer::LogMessage(std::string _message)
+void EngineLayer::EngineLayer::LogMessage(std::string _message, LOG_PRIORITY _priority)
 {
-    m_message_pool.push_back(_message);
+    std::tuple<LOG_PRIORITY, std::string> msg = std::make_tuple(_priority, _message);
+    // TODO : Time + priority format
+    m_message_pool.push_back(msg);
 }
 
 static void DrawEntityNode(Core::Entity* _entity)

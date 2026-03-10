@@ -10,6 +10,7 @@ file(GLOB_RECURSE HEADERS
 )
 
 add_executable("Pruneau-Renderer" ${SOURCES} ${HEADERS})
+
 target_link_libraries("Pruneau-Renderer" PRIVATE
     glfw
     glad
