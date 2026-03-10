@@ -27,7 +27,8 @@ First of all, I want to thanks all the developers of the librairies used in this
 
 ## Overview
 
-<img width="1919" height="1003" alt="image" src="https://github.com/user-attachments/assets/33e6049a-ba9a-4af8-9aad-88ac9ebc9bbe" />
+<img width="1919" height="1001" alt="image" src="https://github.com/user-attachments/assets/79cc597b-dfb4-425c-ad62-112e91a8fa51" />
+
 
 Credits to the [Blender](https://www.blender.org/) team for the suzanne model.
 
@@ -79,6 +80,7 @@ There will be one binary for each major version release.
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 
 
 
