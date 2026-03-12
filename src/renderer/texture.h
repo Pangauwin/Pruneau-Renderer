@@ -18,7 +18,6 @@ public:
 	Texture(void* _data, int _width, int _height);
 
 	~Texture();
-	// TODO : implement texture class
 
 	unsigned int GetID() const;
 

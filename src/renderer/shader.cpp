@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "core/application.h"
+
 Renderer::Shader::Shader(const char* _vertex_shader_code, const char* _fragment_shader_code) : m_id(0)
 {
 	unsigned int vertex_id, fragment_id;
@@ -20,7 +22,9 @@ Renderer::Shader::Shader(const char* _vertex_shader_code, const char* _fragment_
 	if (!success)
 	{
 		glGetShaderInfoLog(vertex_id, 512, NULL, info_log);
-		// TODO : Log error
+
+		Core::LogMessageError("Failed to compile vertex shader: " + (std::string(info_log)));
+
 		glDeleteShader(vertex_id);
 		return;
 	}
@@ -33,6 +37,9 @@ Renderer::Shader::Shader(const char* _vertex_shader_code, const char* _fragment_
 	if (!success)
 	{
 		glGetShaderInfoLog(fragment_id, 512, NULL, info_log);
+
+		Core::LogMessageError("Failed to compile fragment shader: " + (std::string(info_log)));
+
 		glDeleteShader(vertex_id);
 		glDeleteShader(fragment_id);
 		return;
@@ -50,11 +57,12 @@ Renderer::Shader::Shader(const char* _vertex_shader_code, const char* _fragment_
 	{
 		glGetProgramInfoLog(m_id, 512, NULL, info_log);
 
+		Core::LogMessageError("Failed to link shader program: " + ((std::string)info_log));
+
 		//TODO : Log Errors
 		glDeleteProgram(m_id);
 	}
 
-	// delete the shaders as they're linked into our program now and no longer necessary
 	glDeleteShader(vertex_id);
 	glDeleteShader(fragment_id);
 }

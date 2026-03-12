@@ -12,7 +12,7 @@
 #pragma region glfw_callbacks
 
 static void frame_buffer_size_callback(GLFWwindow* window, int width, int height) {
-	glViewport(0, 0, width, height); // TODO : Remove this ?
+	glViewport(0, 0, width, height);
 
 	Core::Application::Get()->m_window->params->height = height;
 	Core::Application::Get()->m_window->params->width = width;

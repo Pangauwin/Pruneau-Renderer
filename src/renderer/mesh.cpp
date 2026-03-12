@@ -4,6 +4,8 @@
 
 #include <glad/glad.h>
 
+#include "core/asset/asset_manager.h"
+
 Renderer::Mesh::Mesh(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices, std::shared_ptr<Core::MaterialAsset> _material):
 	m_vertices(_vertices), m_indices(_indices), m_material(_material)
 {
@@ -134,13 +136,13 @@ Renderer::Mesh* Renderer::Mesh::CreateCube()
 }
 */
 
-// TODO : recreate the upper functions
+// TODO : recreate the upper functions, via the asset manager
 
 void Renderer::Mesh::Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective)
 {
     if (m_material)
     {
-        m_material->Bind();
+        //m_material->Bind();
         m_material->SetUniform("view", _view);
         m_material->SetUniform("model", _model);
         m_material->SetUniform("perspective", _perspective);
@@ -148,7 +150,14 @@ void Renderer::Mesh::Draw(const glm::mat4& _view, const glm::mat4& _model, const
         m_material->Bind();
     }
 
-    // TODO : Create default shader when shader is not valid anymore
+    else
+    {
+        m_material->SetUniform("view", _view);
+        m_material->SetUniform("model", _model);
+        m_material->SetUniform("perspective", _perspective);
+
+        Core::AssetManager::error_material->Bind();
+    }
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);

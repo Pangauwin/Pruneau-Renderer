@@ -28,12 +28,12 @@ public:
 	void OnEvent(Core::Event& _event) override;
 
 	void LogMessage(std::string _message, LOG_PRIORITY _priority);
-	// TODO : Create a clear function
+	void ClearConsole();
 
 	// TODO : Create a editor layout contains the editor features (such as drop file in the OnEvent() function etc...)
 
 private:
-	std::vector<std::tuple<LOG_PRIORITY, std::string>> m_message_pool; // TODO : Create a message type in order to store more information about the message (error, warning, etc...)
+	std::vector<std::tuple<LOG_PRIORITY, std::string>> m_message_pool;
 };
 
 }

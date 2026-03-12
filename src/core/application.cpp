@@ -15,6 +15,8 @@
 
 #include "asset/asset_manager.h"
 
+#include <iostream>
+
 static float dt = 0.00001f; // Avoid 0 divisions errors
 
 static Core::Application* current_application;
@@ -146,7 +148,11 @@ Core::Application* Core::Application::Get()
 
 void Core::Application::LogMessage(std::string _message, EngineLayer::LOG_PRIORITY _priority)
 {
-	m_engine_layer->LogMessage(_message, _priority);
+	if(this)
+		m_engine_layer->LogMessage(_message, _priority);
+
+	// TODO : format and design based on priority
+	std::cout << _message.c_str();
 }
 
 void Core::Application::PollEvents()

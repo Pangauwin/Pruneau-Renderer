@@ -162,6 +162,8 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
 	ImGui::Begin("Console");
 
+    if (ImGui::Button("Clear")) ClearConsole();
+
     for (std::tuple<LOG_PRIORITY, std::string>& message : m_message_pool)
     {
         LOG_PRIORITY _priority = std::get<LOG_PRIORITY>(message);
@@ -235,11 +237,6 @@ void EngineLayer::EngineLayer::OnGUIRender()
         }
 
         if (ImGui::Button("Delete"))
-        {
-            ImGui::CloseCurrentPopup();
-        }
-
-        if (ImGui::Button("Rename"))
         {
             ImGui::CloseCurrentPopup();
         }
@@ -338,6 +335,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
     ImGui::End();
 #pragma endregion
 
+    // TODO : Implement click select
 #pragma region Scene
     ImGui::Begin("Scene", (bool*)0);
 
@@ -448,7 +446,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
             {
                 if (camera_index >= cameras.size())
                 {
-                    //TODO : Log error
+                    Core::LogMessageInfo("Invalid Camera Index. Switching camera_index to 0.");
                 }
 
                 Core::Transform* camera_transform = cameras[camera_index]->GetOwner()->GetComponent<Core::Transform>();
@@ -569,6 +567,11 @@ void EngineLayer::EngineLayer::LogMessage(std::string _message, LOG_PRIORITY _pr
     std::tuple<LOG_PRIORITY, std::string> msg = std::make_tuple(_priority, _message);
     // TODO : Time + priority format
     m_message_pool.push_back(msg);
+}
+
+void EngineLayer::EngineLayer::ClearConsole()
+{
+    m_message_pool.empty();
 }
 
 static void DrawEntityNode(Core::Entity* _entity)
