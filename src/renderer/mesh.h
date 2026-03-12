@@ -18,7 +18,7 @@ struct Vertex {
 
 class Mesh {
 public:
-	Mesh(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices, std::weak_ptr<Core::MaterialAsset> _material);
+	Mesh(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices, std::shared_ptr<Core::MaterialAsset> _material);
 	~Mesh();
 
 	/*static Mesh* CreateTriangle();
@@ -33,7 +33,7 @@ private:
 	std::vector<Vertex> m_vertices;
 	std::vector<unsigned int> m_indices;
 
-	std::weak_ptr<Core::MaterialAsset> m_material;
+	std::shared_ptr<Core::MaterialAsset> m_material;
 
 	unsigned int VAO, VBO, EBO;
 };

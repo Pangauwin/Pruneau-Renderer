@@ -14,8 +14,8 @@ public:
 	Transform(Entity* _owner, glm::vec3 _position = glm::vec3(), glm::quat _rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3 _scale = glm::vec3(1.0f, 1.0f, 1.0f));
 	~Transform();
 
-	glm::mat4 GetWorldTransformMatrix();
-	glm::mat4 GetLocalTransformMatrix();
+	const glm::mat4& GetWorldTransformMatrix();
+	const glm::mat4& GetLocalTransformMatrix();
 
 	void SetPosition(glm::vec3& _position);
 	void SetRotation(glm::quat& _rotation);
@@ -26,13 +26,13 @@ public:
 	void Scale(glm::vec3& _scale);
 	void Scale(float _factor);
 
-	glm::vec3 GetPosition() const;
-	glm::quat GetRotation() const;
-	glm::vec3 GetScale() const;
+	const glm::vec3& GetPosition() const;
+	const glm::quat& GetRotation() const;
+	const glm::vec3& GetScale() const;
 
-	glm::vec3 GetForward() const;
-	glm::vec3 GetUp() const;
-	glm::vec3 GetRight() const;
+	const glm::vec3& GetForward() const;
+	const glm::vec3& GetUp() const;
+	const glm::vec3& GetRight() const;
 
 	void OnEditorRender();
 

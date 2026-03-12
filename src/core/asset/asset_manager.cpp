@@ -342,7 +342,7 @@ Core::AssetID Core::AssetManager::ImportTexture(const std::string& path)
 	}
 
 	s_next_asset_id++;
-	Core::AssetManager::m_assets[s_next_asset_id] = std::make_shared<TextureAsset>("Texture_" + s_next_asset_id, s_next_asset_id, data, width, height);
+	Core::AssetManager::m_assets[s_next_asset_id] = std::make_shared<TextureAsset>("Texture_" + std::to_string(s_next_asset_id), s_next_asset_id, data, width, height);
 
 	stbi_image_free(data);
 
@@ -417,12 +417,12 @@ static bool EndsWith(const std::string& value, const std::string& ending)
 
 static glm::mat4 ConvertMatrix(const aiMatrix4x4& m)
 {
-	glm::mat4 mat;
+	glm::mat4 mat(
+		m.a1, m.a2, m.a3, m.a4,
+		m.b1, m.b2, m.b3, m.b4,
+		m.c1, m.c2, m.c3, m.c4,
+		m.d1, m.d2, m.d3, m.d4
+	);
 
-	mat[0][0] = m.a1; mat[1][0] = m.a2; mat[2][0] = m.a3; mat[3][0] = m.a4;
-	mat[0][1] = m.b1; mat[1][1] = m.b2; mat[2][1] = m.b3; mat[3][1] = m.b4;
-	mat[0][2] = m.c1; mat[1][2] = m.c2; mat[2][2] = m.c3; mat[3][2] = m.c4;
-	mat[0][3] = m.d1; mat[1][3] = m.d2; mat[2][3] = m.d3; mat[3][3] = m.d4;
-
-	return mat;
+	return glm::transpose(mat);
 }

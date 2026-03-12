@@ -76,42 +76,35 @@ void Renderer::Shader::UnBind() const
 
 void Renderer::Shader::SetVec2(const std::string& _name, const glm::vec2& _val) const
 {
-	Bind();
 	glUniform2f(glGetUniformLocation(m_id, _name.c_str()), _val.x, _val.y);
 }
 
 void Renderer::Shader::SetVec3(const std::string& _name, const glm::vec3& _val) const
 {
-	Bind();
 	glUniform3f(glGetUniformLocation(m_id, _name.c_str()), _val.x, _val.y, _val.z);
 }
 
 void Renderer::Shader::SetVec4(const std::string& _name, const glm::vec4& _val) const
 {
-	Bind();
 	glUniform4f(glGetUniformLocation(m_id, _name.c_str()), _val.x, _val.y, _val.z, _val.t);
 }
 
 void Renderer::Shader::SetMat4(const std::string& _name,const glm::mat4& _val) const
 {
-	Bind();
 	glUniformMatrix4fv(glGetUniformLocation(m_id, _name.c_str()), 1, GL_FALSE, glm::value_ptr(_val));
 }
 
 void Renderer::Shader::SetFloat(const std::string& _name, float _val) const
 {
-	Bind();
 	glUniform1f(glGetUniformLocation(m_id, _name.c_str()), _val);
 }
 
 void Renderer::Shader::SetInt(const std::string& _name, int _val) const
 {
-	Bind();
 	glUniform1i(glGetUniformLocation(m_id, _name.c_str()), _val);
 }
 
 void Renderer::Shader::SetBool(const std::string& _name, bool _val) const
 {
-	Bind();
 	glUniform1i(glGetUniformLocation(m_id, _name.c_str()), (int)_val);
 }

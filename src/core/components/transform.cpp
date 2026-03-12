@@ -24,7 +24,8 @@ Core::Transform::Transform(Entity* _owner, glm::vec3 _position, glm::quat _rotat
 
     if (_owner->parent)
     {
-        m_parent = _owner->GetComponent<Transform>()->RegisterChild(this);
+        m_parent = _owner->parent->GetComponent<Transform>();
+        m_parent->RegisterChild(this);
         m_parent->UpdateMatrix();
         m_world_transform = m_parent->GetWorldTransformMatrix() * m_local_transform;
     }
@@ -38,19 +39,20 @@ Core::Transform::Transform(Entity* _owner, glm::vec3 _position, glm::quat _rotat
 
 Core::Transform::~Transform()
 {
-    m_parent->UnRegisterChild(this);
+    if(m_parent)
+        m_parent->UnRegisterChild(this);
 }
 
 #pragma region MatrixGetters
 
-glm::mat4 Core::Transform::GetWorldTransformMatrix()
+const glm::mat4& Core::Transform::GetWorldTransformMatrix()
 {
     if (!m_updated)
         UpdateMatrix();
     return m_world_transform;
 }
 
-glm::mat4 Core::Transform::GetLocalTransformMatrix()
+const glm::mat4& Core::Transform::GetLocalTransformMatrix()
 {
     if (!m_updated)
         UpdateMatrix();
@@ -82,6 +84,7 @@ void Core::Transform::SetScale(glm::vec3& _scale)
 void Core::Transform::Translate(glm::vec3& _translation)
 {
     m_position += _translation;
+    m_updated = false;
 }
 
 void Core::Transform::Rotate(glm::quat& _rotation)
@@ -106,32 +109,32 @@ void Core::Transform::Scale(float _factor)
 
 #pragma region Getters
 
-glm::vec3 Core::Transform::GetPosition() const
+const glm::vec3& Core::Transform::GetPosition() const
 {
     return m_position;
 }
 
-glm::quat Core::Transform::GetRotation() const
+const glm::quat& Core::Transform::GetRotation() const
 {
     return m_rotation;
 }
 
-glm::vec3 Core::Transform::GetScale() const
+const glm::vec3& Core::Transform::GetScale() const
 {
     return m_scale;
 }
 
-glm::vec3 Core::Transform::GetForward() const
+const glm::vec3& Core::Transform::GetForward() const
 {
     return m_forward;
 }
 
-glm::vec3 Core::Transform::GetUp() const
+const glm::vec3& Core::Transform::GetUp() const
 {
     return m_up;
 }
 
-glm::vec3 Core::Transform::GetRight() const
+const glm::vec3& Core::Transform::GetRight() const
 {
     return m_right;
 }
@@ -193,6 +196,8 @@ void Core::Transform::UpdateMatrix()
     {
         it->UpdateMatrix();
     }
+
+    m_updated = true;
 }
 
 Core::Transform* Core::Transform::RegisterChild(Core::Transform* _child)

@@ -15,6 +15,10 @@
 
 #include "core/entity.h"
 
+#include "core/components/model_renderer.h"
+
+#include "core/application.h"
+
 #include <ImGuizmo.h>
 
 static Renderer::Renderer* _current_renderer = nullptr;
@@ -171,19 +175,24 @@ void Renderer::Renderer::PostRender()
 			Core::Camera* _current_camera = m_cameras[m_camera_index];
 
 			//TODO : switch between perspective and orthographic view
-			glm::mat4* perspective = _current_camera->GetPerspective();
-			glm::mat4* world_transform = &_current_camera->GetOwner()->GetComponent<Core::Transform>()->GetWorldTransformMatrix();
-			glm::mat4 view = glm::inverse(*world_transform);
+			glm::mat4 perspective = *_current_camera->GetPerspective();
+			glm::mat4 world_transform = _current_camera->GetOwner()->GetComponent<Core::Transform>()->GetWorldTransformMatrix();
+			glm::mat4 view = glm::inverse(world_transform);
+
+			Core::LogMessageDebug("-- NEW FRAME --");
 
 			for (Core::ModelRenderer* _model_renderer : m_render_pool)
 			{
+				if (!_model_renderer->model) continue;
+
 				/*glm::mat4 mat = _model_renderer->GetOwner()->GetComponent<Core::Transform>()->GetWorldTransformMatrix();
 				Debug_DrawCubeToFramebuffer(mat,
 					view,
 					*perspective);*/ // TODO : clean test
-				glm::mat4* _model = &_model_renderer->GetOwner()->GetComponent<Core::Transform>()->GetWorldTransformMatrix();
+				glm::mat4 _model = _model_renderer->GetOwner()->GetComponent<Core::Transform>()->GetWorldTransformMatrix();
 
-				_model_renderer->model->Draw(view, *_model, *perspective);
+
+				_model_renderer->model->Draw(view, _model, perspective);
 			}
 
 			//Core::LogMessage("GLError : " + std::to_string(glad_glGetError()));

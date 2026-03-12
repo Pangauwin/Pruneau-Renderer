@@ -5,7 +5,6 @@
 
 #include "shader.h"
 
-#include "core/components/model_renderer.h"
 #include "core/components/camera.h"
 
 #include <vector>
@@ -14,6 +13,10 @@ namespace Core {
 	class Application;
 }
 
+namespace Core {
+	class ModelRenderer;
+	class Camera;
+}
 
 namespace Renderer {
 

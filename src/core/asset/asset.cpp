@@ -12,10 +12,10 @@
 
 #include "renderer/mesh.h"
 
-Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<MaterialAsset> _material) 
+Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::shared_ptr<MaterialAsset> _material) 
 	: Asset(std::move(_name), _id) 
 {
-	if (_material.lock())
+	if (_material)
 	{
 		m_mesh = std::make_unique<Renderer::Mesh>(vertices, indices, _material);
 	}
@@ -28,6 +28,7 @@ Core::MeshAsset::MeshAsset(std::string _name, AssetID _id, const std::vector<Ren
 
 void Core::MeshAsset::Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective)
 {
+	Core::LogMessageDebug("mesh transform: " + std::to_string(_model[3].x));
 	m_mesh->Draw(_view, _model, _perspective);
 }
 void Core::MeshAsset::OnGUIRender()
@@ -41,7 +42,7 @@ void Core::MeshAsset::OnGUIRender()
 #include "renderer/texture.h"
 
 Core::TextureAsset::TextureAsset(std::string _name, AssetID _id, void* _data, int _width, int _height) 
-	: Asset(std::move(_name), _id), m_texture(std::make_unique<Renderer::Texture>(_data, _width, _height)) {}
+	: Asset(_name, _id), m_texture(std::make_unique<Renderer::Texture>(_data, _width, _height)) {}
 
 void Core::TextureAsset::Bind(int _slot)
 {

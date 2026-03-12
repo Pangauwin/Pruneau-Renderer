@@ -24,7 +24,7 @@ public:
 	Model(std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes);
 	~Model() = default;
 
-	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
+	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective) const;
 
 	const std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>>& GetMeshes() { return m_meshes; }
 private:

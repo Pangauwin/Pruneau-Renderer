@@ -111,7 +111,7 @@ private:
 class MeshAsset : public Asset
 {
 public:
-	MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::weak_ptr<MaterialAsset> _shader);
+	MeshAsset(std::string _name, AssetID _id, const std::vector<Renderer::Vertex>& vertices, const std::vector<unsigned int>& indices, std::shared_ptr<MaterialAsset> _shader);
 
 	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
 
