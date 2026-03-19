@@ -4,13 +4,13 @@
 /.vs/
 /.idea/
 /.github/
+/.cache/
 
 *.user
 *.exe
 *.dll
 *.so
 *.a
-
 
 TODO-list.txt
 
