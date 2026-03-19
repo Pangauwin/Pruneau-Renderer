@@ -3,7 +3,11 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <iostream>
+
+#ifdef WINDOWS
 #include <Windows.h> // Message boxes
+#endif
 
 #include "../core/application.h"
 #include "core/event/events/file_drop.h"
@@ -71,7 +75,12 @@ Platform::Window::Window(WindowParams& _params) : params(new WindowParams()), m_
 
 	if (m_glfw_window == NULL)
 	{
+		#ifdef WINDOWS
 		MessageBox(NULL, "Window Creation Failed !", NULL, MB_OK);
+		#endif
+
+		std::cout << "[FATAL] : Window Creation Failed !" << std::endl;
+
 		glfwTerminate();
 
 		window_close_callback(m_glfw_window);
@@ -81,7 +90,11 @@ Platform::Window::Window(WindowParams& _params) : params(new WindowParams()), m_
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
+		#ifdef WINDOWS
 		MessageBox(NULL, "Glad Loading Procedure Failed !", NULL, MB_OK);
+		#endif
+
+		std::cout << "[FATAL] : Glad Loading Procedure Failed !" << std::endl;
 		glfwTerminate();
 
 		window_close_callback(m_glfw_window);

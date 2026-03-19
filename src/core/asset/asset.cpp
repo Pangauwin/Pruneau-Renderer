@@ -54,6 +54,10 @@ void Core::TextureAsset::OnGUIRender()
 	ImGui::Text(("Asset ID: " + std::to_string(GetID())).c_str());
 }
 
+namespace Core {
+	TextureAsset::~TextureAsset() = default;
+}
+
 #pragma endregion
 
 #pragma region ShaderAsset
@@ -89,6 +93,10 @@ void Core::ModelAsset::OnGUIRender()
 		std::shared_ptr<MeshAsset> _asset = std::get<std::shared_ptr<MeshAsset>>(_mesh);
 		ImGui::BulletText(_asset->GetName().c_str());
 	}
+}
+
+namespace Core {
+	ModelAsset::~ModelAsset() = default;
 }
 
 #pragma endregion

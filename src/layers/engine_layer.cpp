@@ -67,8 +67,8 @@ AssetExplorerState _state;
 
 void EngineLayer::EngineLayer::OnAttach()
 {
-    Core::AssetID file_icon_asset = Core::AssetManager::ImportAsset("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\icons\\file.png");
-    Core::AssetID folder_icon_asset = Core::AssetManager::ImportAsset("C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\icons\\folder.png");
+    Core::AssetID file_icon_asset = Core::AssetManager::ImportAsset("/media/jerome-gauwin/Data/Dev/Pruneau-Suite/Pruneau-Renderer/ressources/icons/file.png");
+    Core::AssetID folder_icon_asset = Core::AssetManager::ImportAsset("/media/jerome-gauwin/Data/Dev/Pruneau-Suite/Pruneau-Renderer/ressources/icons/folder.png");
 
     icons.file_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(file_icon_asset)->GetTexture()->GetID();
     icons.model_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(file_icon_asset)->GetTexture()->GetID();

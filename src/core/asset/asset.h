@@ -71,6 +71,7 @@ class TextureAsset : public Asset
 {
 public:
 	TextureAsset(std::string _name, AssetID _id, void* _data, int _width, int _height);
+	~TextureAsset();
 
 	Renderer::Texture* GetTexture() { return m_texture.get(); }
 	void Bind(int _slot);
@@ -125,6 +126,7 @@ class ModelAsset : public Asset
 {
 public:
 	ModelAsset(std::string _name, AssetID _id, std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes);
+	~ModelAsset();
 
 	const Renderer::Model* GetModel() const { return m_model.get(); }
 
