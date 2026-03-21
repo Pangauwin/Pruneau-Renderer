@@ -1,11 +1,13 @@
 #include "engine_layer.h"
 
 #include <imgui.h>
+#include <memory>
 #include <string>
 #include <filesystem>
 #include <sstream>
 #include <iomanip>
 #include <variant>
+#include <cxxabi.h>
 
 #include "../core/application.h"
 #include "renderer/renderer.h"
@@ -55,6 +57,9 @@ static ImGuizmo::MODE imguizmo_mode(ImGuizmo::LOCAL);
 
 #pragma region Functions
 static void DrawEntityNode(Core::Entity* _entity);
+
+template<typename T>
+static std::string GetTypeName(T& obj);
 #pragma endregion
 
 #pragma endregion
@@ -213,12 +218,60 @@ void EngineLayer::EngineLayer::OnGUIRender()
         }
     }
 
-    for (std::shared_ptr<Core::Asset> _asset : _current_folder.assets)
+    if(ImGui::BeginTable("Explorer Table", 3, 
+        ImGuiTableFlags_RowBg |
+        ImGuiTableFlags_Sortable |
+        ImGuiTableFlags_Resizable |
+        ImGuiTableFlags_SizingStretchProp
+    ))
     {
-        if (ImGui::ImageButton(std::to_string(_asset->GetID()).c_str(), icons.file_icon, { 16.0f, 16.0f }))
+        ImGui::TableSetupColumn("Icon", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+        ImGui::TableSetupColumn("Name");
+        ImGui::TableSetupColumn("AssetID");
+
+        for (Core::AssetFolder* _folder : _current_folder.children)
         {
-            selected_object = _asset->GetID();
+            ImGui::TableNextRow();
+
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Image(icons.file_icon, ImVec2(32, 32));
+        
+            ImGui::TableSetColumnIndex(1);
+            ImGuiSelectableFlags flags =
+                ImGuiSelectableFlags_SpanAllColumns |
+                ImGuiSelectableFlags_AllowOverlap;
+            
+            if(ImGui::Selectable(_current_folder.name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns))
+            {
+                selected_object = _current_folder.id;
+            }
+
+            ImGui::TableSetColumnIndex(2);
+
+            ImGui::TextUnformatted(std::to_string(_current_folder.id).c_str());
         }
+
+        for (std::shared_ptr<Core::Asset> _asset : _current_folder.assets) {
+            ImGui::TableNextRow();
+
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Image(icons.file_icon, ImVec2(32, 32));
+        
+            ImGui::TableSetColumnIndex(1);
+            ImGuiSelectableFlags flags =
+                ImGuiSelectableFlags_SpanAllColumns |
+                ImGuiSelectableFlags_AllowOverlap;
+            
+            if(ImGui::Selectable(_asset->name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns))
+            {
+                selected_object = _asset->GetID();
+            }
+
+            ImGui::TableSetColumnIndex(2);
+
+            ImGui::TextUnformatted(std::to_string(_asset->GetID()).c_str());
+        }
+        ImGui::EndTable();
     }
 
     ImGui::End();
@@ -274,7 +327,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
                     for (auto& i : selected_entity->components)
                     {
-                        std::string comp_name = typeid(*i.second.get()).name();
+                        std::string comp_name = GetTypeName(*i.second.get());
 
                         std::string result = comp_name.substr(comp_name.find_last_of(":") + 1);
 
@@ -599,4 +652,12 @@ static void DrawEntityNode(Core::Entity* _entity)
 
         ImGui::TreePop();
     }
+}
+
+template <typename T>
+std::string GetTypeName(T& obj)
+{
+    int status = 0;
+    std::unique_ptr<char, void(*)(void*)> res{abi::__cxa_demangle(typeid(obj).name(), nullptr, nullptr, &status), std::free};
+    return (status == 0) ? res.get() : typeid(obj).name();
 }

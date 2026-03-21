@@ -36,7 +36,7 @@ Renderer::Renderer::Renderer(Platform::Window* _window) :
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-	io.IniFilename = "C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\imgui.ini"; // TODO : Remove this in the future
+	io.IniFilename = "/media/jerome-gauwin/Data/Dev/Pruneau-Suite/Pruneau-Renderer/ressources/imgui.ini"; // TODO : Remove this in the future
 
 	ImGui::StyleColorsDark();
 
@@ -180,8 +180,6 @@ void Renderer::Renderer::PostRender()
 			glm::mat4 perspective = *_current_camera->GetPerspective();
 			glm::mat4 world_transform = _current_camera->GetOwner()->GetComponent<Core::Transform>()->GetWorldTransformMatrix();
 			glm::mat4 view = glm::inverse(world_transform);
-
-			Core::LogMessageDebug("-- NEW FRAME --");
 
 			for (Core::ModelRenderer* _model_renderer : m_render_pool)
 			{
