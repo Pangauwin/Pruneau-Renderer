@@ -66,8 +66,9 @@ void Core::AssetManager::Init()
 
 
 	// Import default assets
-	AssetManager::SetDefaultShader("/media/jerome-gauwin/Data/Dev/Pruneau-Suite/Pruneau-Renderer/ressources/shaders/default_vert.glsl");
-	AssetManager::SetErrorShader("/media/jerome-gauwin/Data/Dev/Pruneau-Suite/Pruneau-Renderer/ressources/shaders/error_vert.glsl");
+	// TODO : Remove non-relative paths
+	AssetManager::SetDefaultShader("ressources/shaders/default_vert.glsl");
+	AssetManager::SetErrorShader("ressources/shaders/error_vert.glsl");
 }
 
 Core::AssetID Core::AssetManager::ImportAsset(const std::string& path, FolderID _folder)

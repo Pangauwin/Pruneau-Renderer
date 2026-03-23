@@ -47,8 +47,6 @@ Credits to the [Blender](https://www.blender.org/) team for the suzanne model.
 
 ### Build Instructions
 
-⚠️ This project do not build for now, as non-relative paths are used for now in this project. I consider removing them really soon.
-
 #### WARNING #1 : This projects only builds on Linux.
 #### WARNING #2 : This is NOT a stable version, the project is still in development, expect crashes/non working features
 #### WARNING #3 : This project only works with Visual Studio 2026 and MSVC, don't expect it to work on other compilers

@@ -36,7 +36,7 @@ Renderer::Renderer::Renderer(Platform::Window* _window) :
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-	io.IniFilename = "/media/jerome-gauwin/Data/Dev/Pruneau-Suite/Pruneau-Renderer/ressources/imgui.ini"; // TODO : Remove this in the future
+	io.IniFilename = "ressources/imgui.ini";
 
 	ImGui::StyleColorsDark();
 
@@ -55,11 +55,6 @@ Renderer::Renderer::Renderer(Platform::Window* _window) :
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-
-	default_shader = new Shader(
-		"C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\vertex_shader.glsl",
-		"C:\\Dev\\Pruneau-Suite\\Pruneau-Renderer\\ressources\\shaders\\fragment_shader.glsl"
-	);;
 
 	_current_renderer = this;
 

@@ -10,3 +10,5 @@ endif()
 
 add_subdirectory(vendor)
 add_subdirectory(src)
+
+file(COPY ${CMAKE_SOURCE_DIR}/ressources DESTINATION ${CMAKE_BINARY_DIR})
