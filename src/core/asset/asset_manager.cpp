@@ -66,7 +66,6 @@ void Core::AssetManager::Init()
 
 
 	// Import default assets
-	// TODO : Remove non-relative paths
 	AssetManager::SetDefaultShader("ressources/shaders/default_vert.glsl");
 	AssetManager::SetErrorShader("ressources/shaders/error_vert.glsl");
 }
@@ -199,8 +198,7 @@ Core::AssetID Core::AssetManager::ImportModel(const std::string& _path)
 
 	return BuildModelAsset(parsed_model);
 
-	//TODO #1 : apply the right shader to the meshes
-	//TODO #2 : apply the right transform of the meshes (in the node) inside the model
+	//TODO : apply the right shader to the meshes
 }
 
 static void ParseMaterials(const aiScene* _scene, ParsedModel& _model)

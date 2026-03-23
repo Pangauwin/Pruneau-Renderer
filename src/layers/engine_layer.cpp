@@ -328,7 +328,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
                 if (arg)
                 {
                     Core::Entity* selected_entity = arg;
-                    ImGui::BulletText("%s", selected_entity->name.c_str());
+                    ImGui::InputText("Name##entity_name" , &selected_entity->name);
 
                     for (auto& i : selected_entity->components)
                     {
@@ -636,7 +636,7 @@ static void DrawEntityNode(Core::Entity* _entity)
 {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-    if (_entity->children.size() == 0)
+    if (_entity->children.size() > 0)
     {
         flags |= ImGuiTreeNodeFlags_Leaf;
     }
