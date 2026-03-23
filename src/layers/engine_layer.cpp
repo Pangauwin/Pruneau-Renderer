@@ -23,10 +23,13 @@
 
 #include <ImGuizmo.h>
 #include <imgui_internal.h>
+#include <misc/cpp/imgui_stdlib.h>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "core/time.h"
 
+#include "renderer/ui/user_interface.h"
+//TODO : clean other ImGui/ImGuizmo includes
 
 #pragma region DEFINES
 
@@ -169,6 +172,14 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
     if (ImGui::Button("Clear")) ClearConsole();
 
+    if (ImGui::InputText("command", command, CONSOLE_COMMAND_MAX_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        // TODO : Interpret the command and log the result instead of the command
+        Core::LogMessage(command);
+    }
+
+    ImGui::BeginChild("Console Messages", ImVec2(0.0f, 0.0f));
+
     for (std::tuple<LOG_PRIORITY, std::string>& message : m_message_pool)
     {
         LOG_PRIORITY _priority = std::get<LOG_PRIORITY>(message);
@@ -188,18 +199,12 @@ void EngineLayer::EngineLayer::OnGUIRender()
         else if (_priority == LOG_PRIORITY_ERROR)
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(204, 0, 0, 255));
 
-        ImGui::Text(std::get<std::string>(message).c_str());
+        ImGui::Text("%s", std::get<std::string>(message).c_str());
 
         ImGui::PopStyleColor();
     }
 
-    if (ImGui::InputText("command", command, CONSOLE_COMMAND_MAX_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
-    {
-        // TODO : Interpret the command and log the result instead of the command
-        Core::LogMessage(command);
-    }
-
-    ImGui::SetScrollHereY(1.0f);
+    ImGui::EndChild();
 
 	ImGui::End();
 #pragma endregion
@@ -241,7 +246,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
                 ImGuiSelectableFlags_SpanAllColumns |
                 ImGuiSelectableFlags_AllowOverlap;
             
-            if(ImGui::Selectable(_current_folder.name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns))
+            if(ImGui::Selectable(_current_folder.name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns, ImVec2(0.0f, 32.0f)))
             {
                 selected_object = _current_folder.id;
             }
@@ -262,7 +267,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
                 ImGuiSelectableFlags_SpanAllColumns |
                 ImGuiSelectableFlags_AllowOverlap;
             
-            if(ImGui::Selectable(_asset->name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns))
+            if(ImGui::Selectable(_asset->name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns, ImVec2(0.0f, 32.0f)))
             {
                 selected_object = _asset->GetID();
             }
@@ -296,8 +301,8 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
         ImGui::EndPopup();
     }
-    
-    ImGui::BulletText(_level->name.c_str());
+
+    ImGui::EditableLabel("##level_name", _level->name);
 
     // TODO : Instead of doing that on the runtime, cache the parent/child and call update_tree functions when needed (Entity created/destroyed)
     for (auto& _entity : _level->entities)
@@ -323,7 +328,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
                 if (arg)
                 {
                     Core::Entity* selected_entity = arg;
-                    ImGui::BulletText(selected_entity->name.c_str());
+                    ImGui::BulletText("%s", selected_entity->name.c_str());
 
                     for (auto& i : selected_entity->components)
                     {
@@ -373,7 +378,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
             else if constexpr (std::is_same_v<T, Core::AssetID>)
             {
                 std::shared_ptr<Core::Asset> _asset = Core::AssetManager::GetAsset<Core::Asset>(arg);
-                ImGui::BulletText(_asset->GetName().c_str());
+                ImGui::BulletText("%s", _asset->GetName().c_str());
 
                 _asset->OnGUIRender();
             }
@@ -624,7 +629,7 @@ void EngineLayer::EngineLayer::LogMessage(std::string _message, LOG_PRIORITY _pr
 
 void EngineLayer::EngineLayer::ClearConsole()
 {
-    m_message_pool.empty();
+    m_message_pool.clear();
 }
 
 static void DrawEntityNode(Core::Entity* _entity)
