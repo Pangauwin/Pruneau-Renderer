@@ -12,8 +12,6 @@ void Renderer::Model::Draw(const glm::mat4& _view, const glm::mat4& _model, cons
 	{
 		mesh_asset->Draw(_view, _model * transform, _perspective);
 
-		Core::LogMessageDebug(std::to_string(mesh_asset->GetID()));
-
 		// TODO : in case the mesh isn't valid, delete it from the model
 		// TODO : even better, store the mesh pointer inside a shared_ptr instead and the asset_manager can load/unload the mesh depending if it's needed or not
 	}

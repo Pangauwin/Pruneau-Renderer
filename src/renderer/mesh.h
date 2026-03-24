@@ -29,11 +29,11 @@ public:
 
 	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
 
+	mutable std::shared_ptr<Core::MaterialAsset> m_material;
+
 private:
 	std::vector<Vertex> m_vertices;
 	std::vector<unsigned int> m_indices;
-
-	std::shared_ptr<Core::MaterialAsset> m_material;
 
 	unsigned int VAO, VBO, EBO;
 };

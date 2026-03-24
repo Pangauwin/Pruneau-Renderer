@@ -37,12 +37,15 @@ class Asset
 public:
 	Asset(std::string _name, AssetID _id) : name(std::move(_name)), m_id(_id) {}
 
+	// TODO : Make so that the assets register themselves inside
+
 	virtual ~Asset() = default;
 
 	const std::string& GetName() const { return name; }
 	AssetID GetID() const { return m_id; }
 
 	virtual void OnGUIRender() {}
+	virtual void OnContextMenuRender() {}
 
 public:
 	std::string name;
@@ -62,6 +65,7 @@ public:
 	std::shared_ptr<Renderer::Shader> GetShader() { return m_shader; }
 
 	void OnGUIRender();
+	void OnContextMenuRender();
 
 private:
 	std::shared_ptr<Renderer::Shader> m_shader;
@@ -117,6 +121,8 @@ public:
 	void Draw(const glm::mat4& _view, const glm::mat4& _model, const glm::mat4& _perspective);
 
 	void OnGUIRender();
+
+	const Renderer::Mesh* GetMesh() const { return m_mesh.get(); }
 
 private:
 	std::unique_ptr<Renderer::Mesh> m_mesh;

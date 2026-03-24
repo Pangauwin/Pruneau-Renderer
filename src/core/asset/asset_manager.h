@@ -2,11 +2,16 @@
 
 #include "asset.h"
 
+#include <memory>
 #include <unordered_map>
 
 struct ParsedModel;
 
 namespace Core {
+
+class Application;
+
+// TODO : Import Settings / Preferences
 
 using FolderID = uint32_t;
 
@@ -22,13 +27,10 @@ struct AssetFolder {
 	std::vector<AssetFolder*> children;
 };
 
-class Application;
-
-// TODO : Import Settings / Preferences
-
 class AssetManager
 {
 	friend class Application; // default/error materials and shader imports
+	friend class Asset;
 
 public:
 
@@ -62,6 +64,10 @@ public:
 
 	static std::shared_ptr<MaterialAsset> default_material;
 	static std::shared_ptr<MaterialAsset> error_material;
+#pragma endregion
+
+#pragma region MaterialCreation
+	static AssetID CreateMaterial(std::shared_ptr<ShaderAsset> _shader);
 #pragma endregion
 
 

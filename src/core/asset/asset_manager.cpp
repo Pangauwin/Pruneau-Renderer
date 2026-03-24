@@ -1,6 +1,7 @@
 #include "asset_manager.h"
 #include "asset.h"
 
+#include <memory>
 #include <string>
 
 #include <fstream>
@@ -149,6 +150,7 @@ void Core::AssetManager::SetDefaultShader(const char* _path)
 		s_next_asset_id++;
 		default_material = std::make_shared<MaterialAsset>("Default Material", s_next_asset_id, default_shader);
 		m_assets[s_next_asset_id] = default_material;
+		AssignAssetToFolder(s_next_asset_id, 0);
 	}
 	else
 	{
@@ -166,6 +168,7 @@ void Core::AssetManager::SetErrorShader(const char* _path)
 		s_next_asset_id++;
 		error_material = std::make_shared<MaterialAsset>("Error Material", s_next_asset_id, error_shader);
 		m_assets[s_next_asset_id] = error_material;
+		AssignAssetToFolder(s_next_asset_id, 0);
 	}
 	else
 	{
@@ -399,6 +402,15 @@ Core::AssetID Core::AssetManager::ImportShader(const std::string& path)
 
 	s_next_asset_id++;
 	Core::AssetManager::m_assets[s_next_asset_id] = std::make_shared<ShaderAsset>("Shader_" + std::to_string(s_next_asset_id), s_next_asset_id, vertex_shader.c_str(), fragment_shader.c_str());
+
+	return s_next_asset_id;
+}
+
+Core::AssetID Core::AssetManager::CreateMaterial(std::shared_ptr<ShaderAsset> _shader)
+{
+	s_next_asset_id++;
+	Core::AssetManager::m_assets[s_next_asset_id] = std::make_shared<MaterialAsset>("Material_" + std::to_string(s_next_asset_id), s_next_asset_id, _shader);
+	AssignAssetToFolder(s_next_asset_id, 0);
 
 	return s_next_asset_id;
 }

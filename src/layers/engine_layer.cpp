@@ -272,6 +272,19 @@ void EngineLayer::EngineLayer::OnGUIRender()
                 selected_object = _asset->GetID();
             }
 
+            if(ImGui::IsItemClicked(ImGuiMouseButton_Right))
+            {
+                ImGui::OpenPopup("AssetContextMenu");
+            }
+
+            if(ImGui::BeginPopupContextItem())
+            {
+                _asset->OnContextMenuRender();
+                ImGui::MenuItem("Remove");
+
+                ImGui::EndPopup();
+            }
+
             ImGui::TableSetColumnIndex(2);
 
             ImGui::TextUnformatted(std::to_string(_asset->GetID()).c_str());
