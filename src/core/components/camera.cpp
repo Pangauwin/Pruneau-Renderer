@@ -61,7 +61,7 @@ void Core::Camera::SetCameraConfig(CameraConfig& _camera_config)
 
 void Core::Camera::SetAspect(float _aspect)
 {
-    if (!m_config.type == CAMERA_TYPE_PERSPECTIVE) return;
+    if (!(m_config.type == CAMERA_TYPE_PERSPECTIVE)) return;
 
     CameraPerspectiveData* data = static_cast<CameraPerspectiveData*>(m_config.data);
 
@@ -76,12 +76,12 @@ void Core::Camera::OnEditorRender()
     {
         CameraPerspectiveData* data = static_cast<CameraPerspectiveData*>(m_config.data);
 
-        ImGui::DragFloat("Field of view", &data->fov);
-        ImGui::DragFloat("Far Plane", &data->far_plane);
-        ImGui::DragFloat("Near Plane", &data->near_plane);
-
-        // user changed values -> mark dirty so next GetPerspective recomputes
-        m_updated = false;
+        if(ImGui::DragFloat("Field of view", &data->fov))
+            m_updated = false;
+        if(ImGui::DragFloat("Far Plane", &data->far_plane))
+            m_updated = false;
+        if(ImGui::DragFloat("Near Plane", &data->near_plane))
+            m_updated = false;
     }
 }
 
@@ -101,7 +101,7 @@ glm::mat4* Core::Camera::GetPerspective()
     {
         CameraPerspectiveData* data = static_cast<CameraPerspectiveData*>(m_config.data);
 
-        m_projection = glm::perspective(data->fov, data->aspect, data->near_plane, data->far_plane);
+        m_projection = glm::perspective(glm::radians(data->fov), data->aspect, data->near_plane, data->far_plane);
     }
 
     m_updated = true;
