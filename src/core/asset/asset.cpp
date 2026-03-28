@@ -104,6 +104,8 @@ void Core::ModelAsset::OnGUIRender()
 
 		int id = _asset->GetMesh()->m_material->GetID();
 
+		ImGui::PushID(_asset.get());
+
 		if(ImGui::DragInt("MaterialID", &id))
 		{
 			if(std::shared_ptr<Core::MaterialAsset> _mat = AssetManager::GetAsset<MaterialAsset>(id))
@@ -111,6 +113,8 @@ void Core::ModelAsset::OnGUIRender()
 				_asset->GetMesh()->m_material = _mat;
 			}
 		}
+
+		ImGui::PopID();
 	}
 }
 

@@ -97,7 +97,7 @@ public:
 	void SetTexture(const std::string& uniform_name, std::shared_ptr<TextureAsset> _texture);
 	void SetUniform(const std::string& uniform_name, const UniformValue& _value);
 
-	std::shared_ptr<ShaderAsset> GetShader() const { return m_shader; }
+	std::shared_ptr<ShaderAsset> GetShaderAsset() const { return m_shader; }
 
 	void Bind();
 

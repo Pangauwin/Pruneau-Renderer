@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 
 #include "core/asset/asset_manager.h"
+#include "renderer/shader.h"
 
 Renderer::Mesh::Mesh(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices, std::shared_ptr<Core::MaterialAsset> _material):
 	m_vertices(_vertices), m_indices(_indices), m_material(_material)
@@ -142,21 +143,20 @@ void Renderer::Mesh::Draw(const glm::mat4& _view, const glm::mat4& _model, const
 {
     if (m_material)
     {
-        //m_material->Bind();
-        m_material->SetUniform("view", _view);
-        m_material->SetUniform("model", _model);
-        m_material->SetUniform("perspective", _perspective);
-
         m_material->Bind();
+        
+        m_material->GetShaderAsset()->GetShader()->SetMat4("view", _view);
+        m_material->GetShaderAsset()->GetShader()->SetMat4("model", _model);
+        m_material->GetShaderAsset()->GetShader()->SetMat4("perspective", _perspective);
     }
 
     else
     {
-        m_material->SetUniform("view", _view);
-        m_material->SetUniform("model", _model);
-        m_material->SetUniform("perspective", _perspective);
-
         Core::AssetManager::error_material->Bind();
+
+        Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("view", _view);
+        Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("model", _model);
+        Core::AssetManager::error_material->GetShaderAsset()->GetShader()->SetMat4("perspective", _perspective);
     }
 
     glBindVertexArray(VAO);
