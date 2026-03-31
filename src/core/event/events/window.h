@@ -1,4 +1,3 @@
-// TODO : Move window close event (in event.h file) here
 #include "../event.h"
 
 class WindowCloseEvent : public Core::Event

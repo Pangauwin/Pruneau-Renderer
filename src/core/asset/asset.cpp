@@ -88,7 +88,7 @@ void Core::ShaderAsset::OnContextMenuRender()
 #include "renderer/model.h"
 
 Core::ModelAsset::ModelAsset(std::string _name, AssetID _id, std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes)
-	: Asset(_name, _id), m_model(std::make_unique<Renderer::Model>(std::move(_meshes))) {}
+	: Asset(_name, _id), m_model(std::make_shared<Renderer::Model>(std::move(_meshes))) {}
 
 void Core::ModelAsset::OnGUIRender()
 {

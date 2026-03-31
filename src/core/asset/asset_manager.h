@@ -11,15 +11,12 @@ namespace Core {
 
 class Application;
 
-// TODO : Import Settings / Preferences
-
 using FolderID = uint32_t;
 
 struct AssetFolder {
 	FolderID id;
 
 	std::string name;
-	// TODO : Implement folder color
 
 	FolderID parent = 0;
 

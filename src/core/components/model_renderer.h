@@ -24,7 +24,7 @@ public:
 
 	void OnEditorRender();
 
-	const Renderer::Model* model; //TODO : Replace this pointer by a smart one
+	std::shared_ptr<Renderer::Model> model;
 	AssetID _model_id;
 private:
 

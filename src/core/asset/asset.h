@@ -37,8 +37,6 @@ class Asset
 public:
 	Asset(std::string _name, AssetID _id) : name(std::move(_name)), m_id(_id) {}
 
-	// TODO : Make so that the assets register themselves inside
-
 	virtual ~Asset() = default;
 
 	const std::string& GetName() const { return name; }
@@ -54,8 +52,6 @@ public:
 private:
 	AssetID m_id;
 };
-
-// TODO : Implement OnGuiRender on all Assets
 
 class ShaderAsset : public Asset
 {
@@ -134,13 +130,11 @@ public:
 	ModelAsset(std::string _name, AssetID _id, std::vector<std::tuple<glm::mat4, std::shared_ptr<Core::MeshAsset>>> _meshes);
 	~ModelAsset();
 
-	const Renderer::Model* GetModel() const { return m_model.get(); }
+	std::shared_ptr<Renderer::Model> GetModel() { return m_model; }
 
 	void OnGUIRender();
 
 private:
-	std::unique_ptr<Renderer::Model> m_model;
+	std::shared_ptr<Renderer::Model> m_model;
 };
-
-// TODO : Implement Audio Assets
 }
