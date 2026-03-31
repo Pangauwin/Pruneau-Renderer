@@ -59,10 +59,6 @@ Core::Application::Application(AppParams _params) :
 	current_application = this;
 
 	new LevelManager();
-	AssetManager::Init();
-
-	PushOverlay(m_engine_layer);
-	Time::Init();
 }
 
 Core::Application::~Application()
@@ -70,8 +66,18 @@ Core::Application::~Application()
 
 }
 
+void Core::Application::Init()
+{
+	AssetManager::Init();
+	Time::Init();
+
+	PushOverlay(m_engine_layer);
+}
+
 void Core::Application::Run()
 {
+	Init();
+
 	while (!m_app_should_close)
 	{
 		Time::Update();

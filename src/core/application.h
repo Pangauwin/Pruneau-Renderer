@@ -40,6 +40,7 @@ public:
 
 private:
 	void PollEvents();
+	void Init();
 
 private:
 	void OnClose();
