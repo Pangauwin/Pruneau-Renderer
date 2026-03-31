@@ -23,7 +23,11 @@ static Core::Application* current_application;
 
 void Core::LogMessage(std::string _message)
 {
-	Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_NONE);
+	if(Core::Application::Get())
+		Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_NONE);
+
+	// TODO : format and design based on priority
+	std::cout << _message.c_str();
 }
 
 void Core::LogMessageDebug(std::string _message)
@@ -147,11 +151,7 @@ Core::Application* Core::Application::Get()
 
 void Core::Application::LogMessage(std::string _message, EngineLayer::LOG_PRIORITY _priority)
 {
-	if(this)
-		m_engine_layer->LogMessage(_message, _priority);
-
-	// TODO : format and design based on priority
-	std::cout << _message.c_str();
+	m_engine_layer->LogMessage(_message, _priority);
 }
 
 void Core::Application::PollEvents()

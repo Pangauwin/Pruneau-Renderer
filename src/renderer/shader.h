@@ -22,9 +22,7 @@ public:
 	void SetInt(const std::string& _name, int _val) const;
 	void SetBool(const std::string& _name, bool _val) const;
 
-	const int& GetID() const {return m_id; }
-
-	// TODO : Optimize Setters (can be expensive if called each frame)
+	const unsigned int GetID() const { return m_id; }
 
 private:
 	unsigned int m_id;
