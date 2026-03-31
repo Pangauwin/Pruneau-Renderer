@@ -119,7 +119,7 @@ void Renderer::Framebuffer::Invalidate()
         case GL_FRAMEBUFFER_UNSUPPORTED:
             error_msg += "UNSUPPORTED"; break;
         default:
-            error_msg = "UNKNOWN (" + status + (std::string)")";
+            error_msg += "UNKNOWN (" + std::to_string(status) + ")";
         }
 
         Core::LogMessageError(error_msg);
