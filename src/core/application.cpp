@@ -26,28 +26,39 @@ void Core::LogMessage(std::string _message)
 	if(Core::Application::Get())
 		Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_NONE);
 
-	// TODO : format and design based on priority
-	std::cout << _message.c_str();
+	std::cout << "[MESSAGE] : " << _message.c_str() << "\n";
 }
 
 void Core::LogMessageDebug(std::string _message)
 {
-	Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_DEBUG);
+	if(Core::Application::Get())
+		Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_DEBUG);
+
+	std::cout << "[DEBUG] : " << _message.c_str() << "\n";
 }
 
 void Core::LogMessageInfo(std::string _message)
 {
-	Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_INFO);
+	if(Core::Application::Get())
+		Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_INFO);
+
+	std::cout << "[INFO]" << _message.c_str() << "\n";
 }
 
 void Core::LogMessageWarning(std::string _message)
 {
-	Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_WARNING);
+	if(Core::Application::Get())
+		Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_WARNING);
+
+	std::cout << "[WARNING]" << _message.c_str() << "\n";
 }
 
 void Core::LogMessageError(std::string _message)
 {
-	Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_ERROR);
+	if(Core::Application::Get())
+		Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_ERROR);
+
+	std::cout << "[ERROR]" << _message.c_str() << "\n";
 }
 
 Core::Application::Application(AppParams _params) : 

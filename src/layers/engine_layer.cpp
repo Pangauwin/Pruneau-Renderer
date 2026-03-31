@@ -611,7 +611,6 @@ void EngineLayer::EngineLayer::OnEvent(Core::Event& _event)
                 std::filesystem::path p(path);
 
                 Core::AssetManager::ImportAsset(path.c_str(), _state._current_folder);
-                Core::LogMessage("Asset imported : " + path);
             }
 
             // TODO : Return false if import failed/pass to another layer

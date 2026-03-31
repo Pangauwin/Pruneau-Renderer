@@ -92,13 +92,14 @@ Core::AssetID Core::AssetManager::ImportAsset(const std::string& path, FolderID 
 
 	else
 	{
-		Core::LogMessage("Asset format not handled:" + path);
+		Core::LogMessageError("Asset format not handled:" + path);
 		return 0;
 	}
 
 	if (!id)
-		Core::LogMessage("Could not import asset:" + path);
+		Core::LogMessageError("Could not import asset:" + path);
 	
+	Core::LogMessageInfo("Asset Imported: " + path);	
 	AssignAssetToFolder(id, _folder);
 
 	return id;
