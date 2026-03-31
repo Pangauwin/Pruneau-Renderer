@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <sstream>
 #include <iomanip>
+#include <type_traits>
 #include <variant>
 #include <cxxabi.h>
 
@@ -37,7 +38,7 @@
 
 static char command[CONSOLE_COMMAND_MAX_SIZE];
 
-using UISelectObject = std::variant<std::monostate, Core::Entity*, Core::AssetID>;
+using UISelectObject = std::variant<std::monostate, Core::Entity*, Core::AssetID, Core::AssetFolder*>;
 
 UISelectObject selected_object;
 
@@ -215,13 +216,22 @@ void EngineLayer::EngineLayer::OnGUIRender()
 
     Core::AssetFolder& _current_folder = Core::AssetManager::GetFolder(_state._current_folder);
 
-    for (Core::AssetFolder* _folder : _current_folder.children)
+    if(ImGui::Button("Add Folder"))
     {
-        if (ImGui::ImageButton(std::to_string(_folder->id).c_str(), icons.folder_icon, { 16.0f, 16.0f }))
+        Core::AssetManager::CreateFolder("New Folder", _current_folder.id);
+    }
+
+    if(_current_folder.id != 0)
+    {
+        ImGui::SameLine();
+
+        if(ImGui::Button(".."))
         {
-            _state._current_folder = _folder->id;
+            _state._current_folder = _current_folder.parent;
         }
     }
+
+    ImGui::BeginChild("Explorer Table Window");
 
     if(ImGui::BeginTable("Explorer Table", 3, 
         ImGuiTableFlags_RowBg |
@@ -239,21 +249,30 @@ void EngineLayer::EngineLayer::OnGUIRender()
             ImGui::TableNextRow();
 
             ImGui::TableSetColumnIndex(0);
-            ImGui::Image(icons.file_icon, ImVec2(32, 32));
+            ImGui::Image(icons.folder_icon, ImVec2(32, 32));
         
             ImGui::TableSetColumnIndex(1);
             ImGuiSelectableFlags flags =
                 ImGuiSelectableFlags_SpanAllColumns |
                 ImGuiSelectableFlags_AllowOverlap;
             
-            if(ImGui::Selectable(_current_folder.name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns, ImVec2(0.0f, 32.0f)))
+            ImGui::PushID(_folder->id);
+
+            if(ImGui::Selectable(_folder->name.c_str(), false, ImGuiSelectableFlags_SpanAllColumns, ImVec2(0.0f, 32.0f)))
             {
-                selected_object = _current_folder.id;
+                selected_object = _folder;
             }
+
+            if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            {
+                _state._current_folder = _folder->id;
+            }
+
+            ImGui::PopID();
 
             ImGui::TableSetColumnIndex(2);
 
-            ImGui::TextUnformatted(std::to_string(_current_folder.id).c_str());
+            ImGui::TextUnformatted(std::to_string(_folder->id).c_str());
         }
 
         for (std::shared_ptr<Core::Asset> _asset : _current_folder.assets) {
@@ -280,7 +299,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
             if(ImGui::BeginPopupContextItem())
             {
                 _asset->OnContextMenuRender();
-                ImGui::MenuItem("Remove");
+                ImGui::MenuItem("Remove"); // TODO : Implement
 
                 ImGui::EndPopup();
             }
@@ -291,6 +310,8 @@ void EngineLayer::EngineLayer::OnGUIRender()
         }
         ImGui::EndTable();
     }
+
+    ImGui::EndChild();
 
     ImGui::End();
 
@@ -391,9 +412,18 @@ void EngineLayer::EngineLayer::OnGUIRender()
             else if constexpr (std::is_same_v<T, Core::AssetID>)
             {
                 std::shared_ptr<Core::Asset> _asset = Core::AssetManager::GetAsset<Core::Asset>(arg);
+                
                 ImGui::BulletText("%s", _asset->GetName().c_str());
 
                 _asset->OnGUIRender();
+            }
+
+            else if constexpr (std::is_same_v<T, Core::AssetFolder*>) {
+                Core::AssetFolder* _folder = arg;
+
+                ImGui::InputText("##FolderName", &_folder->name);
+                    
+                ImGui::BulletText("Parent folder ID: %s", std::to_string(_folder->parent).c_str());
             }
 
             else if constexpr (std::is_same_v<T, std::monostate>)

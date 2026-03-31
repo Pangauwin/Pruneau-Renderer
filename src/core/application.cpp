@@ -58,6 +58,7 @@ Core::Application::Application(AppParams _params) :
 	AssetManager::Init();
 
 	PushOverlay(m_engine_layer);
+	Time::Init();
 }
 
 Core::Application::~Application()
@@ -67,8 +68,6 @@ Core::Application::~Application()
 
 void Core::Application::Run()
 {
-	Time::Init();
-
 	while (!m_app_should_close)
 	{
 		Time::Update();
