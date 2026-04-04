@@ -1,6 +1,8 @@
 #include "asset.h"
 #include "asset_manager.h"
 
+#include <cstdint>
+#include <cstring>
 #include <imgui.h>
 
 #include <memory>
@@ -34,7 +36,7 @@ void Core::MeshAsset::Draw(const glm::mat4& _view, const glm::mat4& _model, cons
 }
 void Core::MeshAsset::OnGUIRender()
 {
-	ImGui::Text("%s", ("Asset ID: " + std::to_string(GetID())).c_str());
+
 }
 #pragma endregion
 
@@ -52,7 +54,12 @@ void Core::TextureAsset::Bind(int _slot)
 
 void Core::TextureAsset::OnGUIRender()
 {
-	ImGui::Text("%s",("Asset ID: " + std::to_string(GetID())).c_str());
+	ImGui::Text("Texture preview:");
+	Renderer::Texture* tex = GetTexture();
+	if(tex)
+		ImGui::Image((void*)(intptr_t)tex->GetID(), ImVec2(tex->GetWidth(), tex->GetHeight()));
+	else
+	 	ImGui::Text("No render available (texture may be broken)");
 }
 
 namespace Core {
@@ -70,7 +77,7 @@ Core::ShaderAsset::ShaderAsset(std::string _name, AssetID _id, const char* _vert
 
 void Core::ShaderAsset::OnGUIRender()
 {
-	ImGui::Text("%s",("Asset ID: " + std::to_string(GetID())).c_str());
+	ImGui::Text("Shader Asset");
 }
 
 void Core::ShaderAsset::OnContextMenuRender()
@@ -92,10 +99,6 @@ Core::ModelAsset::ModelAsset(std::string _name, AssetID _id, std::vector<std::tu
 
 void Core::ModelAsset::OnGUIRender()
 {
-	ImGui::InputText(("Asset Name##" + std::to_string(GetID())).c_str(), &name);
-
-	ImGui::Text("%s",("Asset ID: " + std::to_string(GetID())).c_str());
-
 	ImGui::Text("Internal meshes ids: ");
 	for (auto& _mesh : m_model->GetMeshes())
 	{
@@ -174,23 +177,57 @@ void Core::MaterialAsset::Bind()
 
 void Core::MaterialAsset::OnGUIRender()
 {
-	ImGui::Text("Asset ID: %s" , std::to_string(GetID()).c_str());
-
 	if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
     {
         for (auto& [uniform_name, tex] : m_textures)
         {
-            if (!tex) continue;
-
             ImGui::Text("%s:", uniform_name.c_str());
-            ImGui::SameLine();
+            
+			int v = 0;
 
-            Renderer::Texture* texture = tex->GetTexture();
-            if (texture)
-            {
-                ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2(64,64));
-            }
+			if(tex)
+				v = tex->GetID();
+			
+			if(ImGui::DragInt("TextureID: ", &v))
+			{
+				tex = AssetManager::GetAsset<TextureAsset>(v);
+			}
+			if(tex)
+			{
+				Renderer::Texture* texture = tex->GetTexture();
+				if (texture)
+				{
+					ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2(64,64));
+				}
+			}
         }
+
+		if(ImGui::Button("Add Texture"))
+			ImGui::OpenPopup("Add Texture Popup");
+
+		if(ImGui::BeginPopup("Add Texture Popup"))
+		{
+			static char name[64] = "";
+			static int texture_id = 0;
+
+			ImGui::InputText("Name", name, 64);
+			ImGui::DragInt("Texture ID", &texture_id);
+
+			if(ImGui::Button("Add"))
+			{
+				if(strlen(name) > 0)
+				{
+					std::shared_ptr<Core::TextureAsset> texture = AssetManager::GetAsset<TextureAsset>(texture_id);
+					m_textures[name] = texture;
+
+					name[0] = '\0';
+				}
+
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
     }
 
 	if (ImGui::CollapsingHeader("Uniforms", ImGuiTreeNodeFlags_DefaultOpen))

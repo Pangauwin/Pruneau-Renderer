@@ -11,6 +11,7 @@
 #include <cxxabi.h>
 
 #include "../core/application.h"
+#include "core/asset/asset.h"
 #include "renderer/renderer.h"
 #include "../core/event/event_dispatcher.h"
 
@@ -279,7 +280,10 @@ void EngineLayer::EngineLayer::OnGUIRender()
             ImGui::TableNextRow();
 
             ImGui::TableSetColumnIndex(0);
-            ImGui::Image(icons.file_icon, ImVec2(32, 32));
+            if(std::shared_ptr<Core::TextureAsset> _tex = Core::AssetManager::GetAsset<Core::TextureAsset>(_asset->GetID()))
+                ImGui::Image(_tex->GetTexture()->GetID(), ImVec2(32, 32));
+            else
+                ImGui::Image(icons.file_icon, ImVec2(32, 32));
         
             ImGui::TableSetColumnIndex(1);
             ImGuiSelectableFlags flags =
@@ -413,7 +417,9 @@ void EngineLayer::EngineLayer::OnGUIRender()
             {
                 std::shared_ptr<Core::Asset> _asset = Core::AssetManager::GetAsset<Core::Asset>(arg);
                 
-                ImGui::BulletText("%s", _asset->GetName().c_str());
+                ImGui::InputText("Asset Name", &_asset->name);
+
+                ImGui::Text("Asset ID: %s", std::to_string(_asset->GetID()).c_str());
 
                 _asset->OnGUIRender();
             }

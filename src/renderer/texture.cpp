@@ -55,7 +55,7 @@ Renderer::Texture::Texture(const char* _path, TEXTURE_TYPE _type) : type(_type)
     stbi_image_free(data);
 }
 
-Renderer::Texture::Texture(void* _data, int _width, int _height)
+Renderer::Texture::Texture(void* _data, int _width, int _height) : width(_width), height(_height)
 {
     glGenTextures(1, &m_id);
 

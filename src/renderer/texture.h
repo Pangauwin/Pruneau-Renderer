@@ -22,8 +22,12 @@ public:
 	unsigned int GetID() const;
 
 	void Bind(int _slot) const;
+	int GetHeight() const { return height; }
+	int GetWidth() const { return width; }
+	int GetChannelNumber() const { return channel_nb; }
 
 	TEXTURE_TYPE type;
+	
 private:
 	unsigned int m_id = 0;
 

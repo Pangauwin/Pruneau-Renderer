@@ -7,6 +7,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <filesystem>
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -16,6 +18,7 @@
 #include <stb_image.h>
 
 #include "core/application.h"
+#include "glm/fwd.hpp"
 #include "renderer/mesh.h"
 
 static bool EndsWith(const std::string& value, const std::string& ending);
@@ -67,8 +70,8 @@ void Core::AssetManager::Init()
 
 
 	// Import default assets
-	AssetManager::SetDefaultShader("ressources/shaders/default_vert.glsl");
-	AssetManager::SetErrorShader("ressources/shaders/error_vert.glsl");
+	AssetManager::SetDefaultShader("ressources/shaders/default.vert");
+	AssetManager::SetErrorShader("ressources/shaders/error.vert");
 }
 
 Core::AssetID Core::AssetManager::ImportAsset(const std::string& path, FolderID _folder)
@@ -85,7 +88,7 @@ Core::AssetID Core::AssetManager::ImportAsset(const std::string& path, FolderID 
 		id = ImportTexture(path);
 	}
 
-	else if (EndsWith(path, ".glsl"))
+	else if (EndsWith(path, ".vert") || EndsWith(path, ".frag"))
 	{
 		id = ImportShader(path);
 	}
@@ -101,6 +104,8 @@ Core::AssetID Core::AssetManager::ImportAsset(const std::string& path, FolderID 
 	
 	Core::LogMessageInfo("Asset Imported: " + path);	
 	AssignAssetToFolder(id, _folder);
+
+	GetAsset<Asset>(id)->name = std::filesystem::path(path).stem().string();
 
 	return id;
 }
@@ -182,10 +187,9 @@ Core::AssetID Core::AssetManager::ImportModel(const std::string& _path)
 {
 	Assimp::Importer importer;
 
-	unsigned int import_flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality | aiProcess_GlobalScale;
-
-	if (EndsWith(_path, ".obj"))
-		import_flags |= aiProcess_FlipUVs;
+	unsigned int import_flags = 
+		aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | 
+		aiProcess_ImproveCacheLocality | aiProcess_GlobalScale | aiProcess_FlipUVs;
 
 	const aiScene* scene = importer.ReadFile(_path, import_flags);
 
@@ -276,6 +280,9 @@ static ParsedMesh ParseMesh(aiMesh* _mesh)
 				_mesh->mTextureCoords[0][i].y
 			};
 		}
+		else {
+			vertex.uv_coord = glm::vec2(0.0f);
+		}
 
 		parsed_mesh.vertices.push_back(vertex);
 	}
@@ -357,21 +364,21 @@ Core::AssetID Core::AssetManager::ImportShader(const std::string& path)
 	std::string vertex_shader_file_path = path;
 	std::string fragment_shader_file_path = path;
 
-	if (EndsWith(path, "_vert.glsl"))
+	if (EndsWith(path, ".vert"))
 	{
-		size_t pos = fragment_shader_file_path.rfind("_vert.glsl");
-		fragment_shader_file_path.replace(pos, 10, "_frag.glsl");
+		size_t pos = fragment_shader_file_path.rfind(".vert");
+		fragment_shader_file_path.replace(pos, 5, ".frag");
 	}
 
-	else if (EndsWith(path, "_frag.glsl"))
+	else if (EndsWith(path, ".frag"))
 	{
-		size_t pos = vertex_shader_file_path.rfind("_frag.glsl");
-		vertex_shader_file_path.replace(pos, 10, "_vert.glsl");
+		size_t pos = vertex_shader_file_path.rfind(".frag");
+		vertex_shader_file_path.replace(pos, 5, ".vert");
 	}
 
 	else
 	{
-		Core::LogMessage("Could not import Shader, make sure the filename ends with _vert.glsl or _frag.glsl (underscore included)");
+		Core::LogMessage("Could not import Shader, make sure the filename ends with .vert or .frag");
 		return 0;
 	}
 
