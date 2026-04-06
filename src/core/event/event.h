@@ -8,8 +8,7 @@ enum class event_type {
 	event_type_window_close,
 	event_type_window_resize,
 
-	event_type_key_pressed,
-	event_type_key_released,
+	event_type_keyboard,
 
 	event_type_mouse_button,
 

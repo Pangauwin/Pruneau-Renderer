@@ -12,6 +12,10 @@
 
 #include "../core/application.h"
 #include "core/asset/asset.h"
+#include "core/components/camera.h"
+#include "core/components/transform.h"
+#include "core/entity.h"
+#include "glm/fwd.hpp"
 #include "renderer/renderer.h"
 #include "../core/event/event_dispatcher.h"
 
@@ -74,16 +78,32 @@ struct AssetExplorerState {
 };
 
 AssetExplorerState _state;
+Core::Entity* editor_camera = nullptr;
 
 void EngineLayer::EngineLayer::OnAttach()
 {
-    Core::AssetID file_icon_asset = Core::AssetManager::ImportAsset("ressources/icons/file.png");
-    Core::AssetID folder_icon_asset = Core::AssetManager::ImportAsset("ressources/icons/folder.png");
+    // Import ressources    
+    Core::FolderID editor_folder = Core::AssetManager::CreateFolder("Editor Assets");
+    Core::FolderID ressources_folder = Core::AssetManager::CreateFolder("Default ressources");
+
+    Core::AssetID file_icon_asset = Core::AssetManager::ImportAsset("ressources/icons/file.png", editor_folder);
+    Core::AssetID folder_icon_asset = Core::AssetManager::ImportAsset("ressources/icons/folder.png", editor_folder);
+
+	Core::AssetManager::ImportAsset("ressources/shaders/tex.vert", ressources_folder);
+	Core::AssetManager::ImportAsset("ressources/shaders/color.vert", ressources_folder);
+	Core::AssetManager::ImportAsset("ressources/models/cube.fbx", ressources_folder);
 
     icons.file_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(file_icon_asset)->GetTexture()->GetID();
     icons.model_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(file_icon_asset)->GetTexture()->GetID();
     icons.texture_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(file_icon_asset)->GetTexture()->GetID();
     icons.folder_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(folder_icon_asset)->GetTexture()->GetID();
+
+    //TODO : Move this on an event Called OnLevelLoaded (move inside an editor layer)
+    editor_camera = Core::LevelManager::GetCurrentLevel()->CreateEntity("Editor Camera");
+    editor_camera->AddComponent<Core::Camera>();
+
+    glm::vec3 camera_position = glm::vec3(0, 0, 20);
+    editor_camera->GetComponent<Core::Transform>()->SetPosition(camera_position);
 }
 
 void EngineLayer::EngineLayer::OnGUIRender()

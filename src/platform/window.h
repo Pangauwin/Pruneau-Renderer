@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../core/event/event.h"
-
 struct GLFWwindow;
 
 namespace Renderer {
@@ -32,7 +30,7 @@ public:
 	float GetTime(); 
 
 public:
-	WindowParams* params;
+	WindowParams params;
 
 private:
 	GLFWwindow* m_glfw_window;

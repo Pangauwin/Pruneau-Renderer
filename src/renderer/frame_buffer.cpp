@@ -29,7 +29,7 @@ void Renderer::Framebuffer::UnBind()
 
     gl_error = glGetError();
 
-    glViewport(0, 0, Core::Application::Get()->m_window->params->width, Core::Application::Get()->m_window->params->height);
+    glViewport(0, 0, Core::Application::Get()->m_window->params.width, Core::Application::Get()->m_window->params.height);
 }
 
 void Renderer::Framebuffer::Resize(uint32_t _width, uint32_t _height)

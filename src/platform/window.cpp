@@ -9,17 +9,22 @@
 #include <Windows.h> // Message boxes
 #endif
 
-#include "../core/application.h"
+#include "core/application.h"
+
+#include "core/input/input.h"
+
 #include "core/event/events/file_drop.h"
 #include "core/event/events/mouse_button.h"
+#include "core/event/events/keyboard.h"
+#include "core/event/events/char.h"
 
 #pragma region glfw_callbacks
 
 static void frame_buffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 
-	Core::Application::Get()->m_window->params->height = height;
-	Core::Application::Get()->m_window->params->width = width;
+	Core::Application::Get()->m_window->params.height = height;
+	Core::Application::Get()->m_window->params.width = width;
 }
 
 static void window_close_callback(GLFWwindow* window) {
@@ -42,36 +47,38 @@ static void drop_file_callback(GLFWwindow* window, int count, const char** paths
 }
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
+{	
+	Core::Input::ChangeMouseState((Core::MOUSE_BUTTON)button, action == GLFW_RELEASE ? Core::MOUSE_BUTTON_STATE_RELEASED : Core::MOUSE_BUTTON_STATE_PRESSED);
+
 	Core::MouseButtonEvent event(button, action, mods);
 	Core::Application::Get()->OnEvent(event);
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	//TODO : implement
+	Core::Input::ChangeKeyState(key, action == GLFW_RELEASE ? Core::KEY_STATE_RELEASED : Core::KEY_STATE_PRESSED);
+
+	Core::KeyboardEvent event(key, scancode, action, mods);
+	Core::Application::Get()->OnEvent(event);
 }
 
 static void char_callback(GLFWwindow* window, unsigned int codepoint)
 {
-	//TODO : implement
+	Core::CharEvent event(codepoint);
+	Core::Application::Get()->OnEvent(event);
 }
 #pragma endregion
 
 
-Platform::Window::Window(WindowParams& _params) : params(new WindowParams()), m_glfw_window(NULL)
+Platform::Window::Window(WindowParams& _params) : params(_params), m_glfw_window(NULL)
 {
-	params->height = _params.height;
-	params->width = _params.width;
-	params->title = _params.title;
-
 	glfwInit();
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	m_glfw_window = glfwCreateWindow(params->width, params->height, params->title, NULL, NULL);
+	m_glfw_window = glfwCreateWindow(params.width, params.height, params.title, NULL, NULL);
 
 	if (m_glfw_window == NULL)
 	{
@@ -82,8 +89,6 @@ Platform::Window::Window(WindowParams& _params) : params(new WindowParams()), m_
 		std::cout << "[FATAL] : Window Creation Failed !" << std::endl;
 
 		glfwTerminate();
-
-		window_close_callback(m_glfw_window);
 	}
 
 	glfwMakeContextCurrent(m_glfw_window);
@@ -96,11 +101,9 @@ Platform::Window::Window(WindowParams& _params) : params(new WindowParams()), m_
 
 		std::cout << "[FATAL] : Glad Loading Procedure Failed !" << std::endl;
 		glfwTerminate();
-
-		window_close_callback(m_glfw_window);
 	}
 
-	glViewport(0, 0, params->width, params->height);
+	glViewport(0, 0, params.width, params.height);
 
 	glfwSetFramebufferSizeCallback(m_glfw_window, frame_buffer_size_callback);
 	glfwSetWindowCloseCallback(m_glfw_window, window_close_callback);
@@ -115,6 +118,7 @@ Platform::Window::Window(WindowParams& _params) : params(new WindowParams()), m_
 
 Platform::Window::~Window()
 {
+	window_close_callback(m_glfw_window);
 	glfwTerminate();
 }
 

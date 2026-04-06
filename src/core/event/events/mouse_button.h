@@ -11,7 +11,7 @@ public:
 	static event_type GetStaticType() { return event_type::event_type_mouse_button; }
 	event_type GetEventType() const override { return GetStaticType(); }
 	const char* GetName() const override { return "MouseButton"; }
-	int GetCategoryFlags() const override { return event_category_input; }
+	int GetCategoryFlags() const override { return event_category_mouse_button | event_category_input | event_category_mouse; }
 
 public:
 	int button, action, mods;
