@@ -4,9 +4,6 @@
 
 #include "entity.h"
 
-#include "components/camera.h"
-#include "components/model_renderer.h"
-
 namespace Core
 {
 class Level
@@ -24,7 +21,7 @@ public:
     Level(Level&&) = default;
     Level& operator=(Level&&) = default;
 
-    Entity* CreateEntity(const char* _name, Entity* _parent);
+    Entity* CreateEntity(const char* _name, Entity* _parent = nullptr);
 
     void OnAwake();
     void OnStart();
