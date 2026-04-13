@@ -15,6 +15,8 @@
 
 #include "asset/asset_manager.h"
 
+#include "core/input/input.h"
+
 #include <iostream>
 
 static float dt = 0.00001f; // Avoid 0 divisions errors
@@ -92,6 +94,7 @@ void Core::Application::Run()
 	while (!m_app_should_close)
 	{
 		Time::Update();
+		Input::UpdateMouseDelta();
 
 		PollEvents();
 		m_window->SwapBuffers();

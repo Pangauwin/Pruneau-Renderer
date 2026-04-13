@@ -29,6 +29,9 @@ public:
 
 	float GetTime(); 
 
+	void DisableMouse();
+	void EnableMouse();
+
 public:
 	WindowParams params;
 

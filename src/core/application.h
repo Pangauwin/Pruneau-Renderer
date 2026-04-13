@@ -49,12 +49,12 @@ public:
 	std::unique_ptr<Platform::Window> m_window;
 	std::unique_ptr<Renderer::Renderer> m_renderer;
 
+	EngineLayer::EngineLayer* m_engine_layer;
+
 private:
 	bool m_app_should_close;
 
 	LayerStack m_layer_stack;
-
-	EngineLayer::EngineLayer* m_engine_layer;
 };
 
 }

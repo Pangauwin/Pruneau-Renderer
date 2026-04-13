@@ -12,8 +12,12 @@
 
 #include "../core/application.h"
 #include "core/asset/asset.h"
+
 #include "core/components/camera.h"
+#include "core/components/model_renderer.h"
 #include "core/components/transform.h"
+#include "core/components/editor_camera.h"
+
 #include "core/entity.h"
 #include "glm/fwd.hpp"
 #include "renderer/renderer.h"
@@ -77,8 +81,9 @@ struct AssetExplorerState {
     Core::FolderID _current_folder = 0;
 };
 
-AssetExplorerState _state;
-Core::Entity* editor_camera = nullptr;
+static AssetExplorerState _state;
+static Core::Entity* editor_camera = nullptr;
+static Core::Entity* default_cube = nullptr;
 
 void EngineLayer::EngineLayer::OnAttach()
 {
@@ -91,7 +96,7 @@ void EngineLayer::EngineLayer::OnAttach()
 
 	Core::AssetManager::ImportAsset("ressources/shaders/tex.vert", ressources_folder);
 	Core::AssetManager::ImportAsset("ressources/shaders/color.vert", ressources_folder);
-	Core::AssetManager::ImportAsset("ressources/models/cube.fbx", ressources_folder);
+	Core::AssetID cube_id = Core::AssetManager::ImportAsset("ressources/models/cube.fbx", ressources_folder);
 
     icons.file_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(file_icon_asset)->GetTexture()->GetID();
     icons.model_icon = Core::AssetManager::GetAsset<Core::TextureAsset>(file_icon_asset)->GetTexture()->GetID();
@@ -101,9 +106,16 @@ void EngineLayer::EngineLayer::OnAttach()
     //TODO : Move this on an event Called OnLevelLoaded (move inside an editor layer)
     editor_camera = Core::LevelManager::GetCurrentLevel()->CreateEntity("Editor Camera");
     editor_camera->AddComponent<Core::Camera>();
+    editor_camera->AddComponent<Editor::EditorCamera>();
 
-    glm::vec3 camera_position = glm::vec3(0, 0, 20);
+    glm::vec3 camera_position = glm::vec3(0, 1.8, 5.7);
     editor_camera->GetComponent<Core::Transform>()->SetPosition(camera_position);
+
+    default_cube = Core::LevelManager::GetCurrentLevel()->CreateEntity("Default Cube");
+    default_cube->AddComponent<Core::ModelRenderer>(cube_id);
+
+    glm::quat cube_rotation = glm::quat(glm::vec3(0, -28.726, 0));
+    default_cube->GetComponent<Core::Transform>()->SetRotation(cube_rotation);
 }
 
 void EngineLayer::EngineLayer::OnGUIRender()
@@ -226,6 +238,8 @@ void EngineLayer::EngineLayer::OnGUIRender()
         ImGui::PopStyleColor();
     }
 
+    ImGui::SetScrollHereY(1.0f);
+
     ImGui::EndChild();
 
 	ImGui::End();
@@ -300,6 +314,9 @@ void EngineLayer::EngineLayer::OnGUIRender()
             ImGui::TableNextRow();
 
             ImGui::TableSetColumnIndex(0);
+
+            ImGui::PushID(_asset.get());
+
             if(std::shared_ptr<Core::TextureAsset> _tex = Core::AssetManager::GetAsset<Core::TextureAsset>(_asset->GetID()))
                 ImGui::Image(_tex->GetTexture()->GetID(), ImVec2(32, 32));
             else
@@ -314,6 +331,8 @@ void EngineLayer::EngineLayer::OnGUIRender()
             {
                 selected_object = _asset->GetID();
             }
+
+            ImGui::PopID();
 
             if(ImGui::IsItemClicked(ImGuiMouseButton_Right))
             {
@@ -533,6 +552,23 @@ void EngineLayer::EngineLayer::OnGUIRender()
             ImVec2(1, 0)
         );
 
+        if(ImGui::IsItemClicked(ImGuiMouseButton_Right))
+        {
+            ImGui::SetNextFrameWantCaptureKeyboard(false);
+            ImGui::GetIO().WantCaptureMouse = false;
+            ImGui::SetWindowFocus();
+
+            Core::Application::Get()->m_window->DisableMouse();
+        }
+
+        if(ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+        {
+            ImGui::GetIO().WantCaptureMouse = true;
+            Core::Application::Get()->m_window->EnableMouse();
+        }
+
+        is_renderer_focused = ImGui::IsWindowFocused() && ImGui::IsMouseDown(ImGuiMouseButton_Right);
+
         ImVec2 image_min = ImGui::GetItemRectMin();
         ImVec2 image_max = ImGui::GetItemRectMax();
         ImVec2 image_size = ImVec2(image_max.x - image_min.x, image_max.y - image_min.y);
@@ -657,7 +693,7 @@ void EngineLayer::EngineLayer::OnEvent(Core::Event& _event)
         }
 
         ImGuiIO& io = ImGui::GetIO();
-        if (io.WantCaptureKeyboard || io.WantCaptureMouse)
+        if ((io.WantCaptureKeyboard || io.WantCaptureMouse) && !is_renderer_focused)
         {
             _event.handled = true;  // Block input if ImGui is capturing it
             // TODO : Fix that and make the lock icon on the inspector

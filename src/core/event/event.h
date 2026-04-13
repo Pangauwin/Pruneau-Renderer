@@ -24,6 +24,7 @@ enum event_category {
 	event_category_keyboard		= 1 << 2,
 	event_category_mouse		= 1 << 3,
 	event_category_mouse_button	= 1 << 4,
+	event_category_mouse_motion = 1 << 5
 };
 
 class Event {

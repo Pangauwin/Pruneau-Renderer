@@ -1,8 +1,19 @@
 #include "input.h"
 
+#include "platform/window.h"
+
 namespace Core {
 
-MOUSE_BUTTON_STATE Input::mouse_map[8] = {MOUSE_BUTTON_STATE_RELEASED,  MOUSE_BUTTON_STATE_RELEASED, MOUSE_BUTTON_STATE_RELEASED};
+MOUSE_BUTTON_STATE Input::mouse_map[8] = {MOUSE_BUTTON_STATE_RELEASED,  
+    MOUSE_BUTTON_STATE_RELEASED, 
+    MOUSE_BUTTON_STATE_RELEASED
+};
+
+double Input::mouse_delta[2] = {0, 0};
+double Input::mouse_position[2] = {0, 0};
+double Input::previous_mouse_position[2] = {0, 0};
+
+bool Input::disabled_mouse = false;
 
 KEY_STATE Input::keyboard_map[349] = {
     KEY_STATE_RELEASED,
@@ -383,6 +394,43 @@ void Input::ChangeMouseState(MOUSE_BUTTON _button, MOUSE_BUTTON_STATE _state)
 {
     if(_button >= 0 && _button <= 7)
         mouse_map[_button] = _state;
+}
+
+const double* Input::GetMouseDelta()
+{
+    return mouse_delta;
+}
+
+const double* Input::GetMousePosition()
+{
+    return mouse_position;
+}
+
+void Input::UpdateMousePosition(double* _mouse_position)
+{
+    mouse_position[0] = _mouse_position[0];
+    mouse_position[1] = _mouse_position[1];
+}
+
+void Input::UpdateMouseDelta()
+{
+    mouse_delta[0] = mouse_position[0] - previous_mouse_position[0];
+    mouse_delta[1] = mouse_position[1] - previous_mouse_position[1];
+
+    previous_mouse_position[0] = mouse_position[0];
+    previous_mouse_position[1] = mouse_position[1];
+}
+
+void Input::ChangeDisabledMouse(bool _disabled_mouse)
+{
+    disabled_mouse = _disabled_mouse;
+
+    
+}
+
+bool Input::GetDisabledMouse()
+{
+    return disabled_mouse;
 }
 
 }

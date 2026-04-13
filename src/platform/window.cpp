@@ -17,6 +17,7 @@
 #include "core/event/events/mouse_button.h"
 #include "core/event/events/keyboard.h"
 #include "core/event/events/char.h"
+#include "core/event/events/cursor_position.h"
 
 #pragma region glfw_callbacks
 
@@ -67,6 +68,17 @@ static void char_callback(GLFWwindow* window, unsigned int codepoint)
 	Core::CharEvent event(codepoint);
 	Core::Application::Get()->OnEvent(event);
 }
+
+static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	Core::CursorPosition event(xpos, ypos);
+	Core::Application::Get()->OnEvent(event);
+
+	double mouse_position[2] = {xpos, ypos};
+
+	Core::Input::UpdateMousePosition(mouse_position);
+}
+
 #pragma endregion
 
 
@@ -110,6 +122,7 @@ Platform::Window::Window(WindowParams& _params) : params(_params), m_glfw_window
 	glfwSetDropCallback(m_glfw_window, drop_file_callback);
 
 	glfwSetMouseButtonCallback(m_glfw_window, mouse_button_callback);
+	glfwSetCursorPosCallback(m_glfw_window, cursor_position_callback);
 	glfwSetKeyCallback(m_glfw_window, key_callback);
 	glfwSetCharCallback(m_glfw_window, char_callback);
 
@@ -135,4 +148,14 @@ void Platform::Window::PollEvents()
 float Platform::Window::GetTime()
 {
 	return static_cast<float>(glfwGetTime());
+}
+
+void Platform::Window::DisableMouse()
+{
+	glfwSetInputMode(m_glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void Platform::Window::EnableMouse()
+{
+	glfwSetInputMode(m_glfw_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }

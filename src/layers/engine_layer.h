@@ -32,6 +32,7 @@ public:
 
 	// TODO : Create a editor layout contains the editor features (such as drop file in the OnEvent() function etc...)
 
+	bool is_renderer_focused = false;
 private:
 	std::vector<std::tuple<LOG_PRIORITY, std::string>> m_message_pool;
 };

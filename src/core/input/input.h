@@ -33,6 +33,15 @@ public:
     static void ChangeKeyState(int _key, KEY_STATE _state);
     static void ChangeMouseState(MOUSE_BUTTON _button, MOUSE_BUTTON_STATE _state);
 
+    static const double* GetMouseDelta();
+    static const double* GetMousePosition();
+
+    static void UpdateMousePosition(double* mouse_position);
+    static void UpdateMouseDelta();
+    
+    static void ChangeDisabledMouse(bool _disabled);
+    static bool GetDisabledMouse();
+
 private:
     Input() = default;
     ~Input() = default;
@@ -40,6 +49,11 @@ private:
 private:
     static KEY_STATE keyboard_map[349];
     static MOUSE_BUTTON_STATE mouse_map[8];
+    static double mouse_delta[2];
+    static double mouse_position[2];
+    static double previous_mouse_position[2];
+    static bool disabled_mouse;
+
 };
 
 }
