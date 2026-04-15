@@ -192,12 +192,12 @@ void Core::Transform::UpdateMatrix()
         m_world_transform = m_local_transform;
     }
 
+    this->m_updated = true;
+
     for (auto& it : m_children)
     {
         it->UpdateMatrix();
     }
-
-    m_updated = true;
 }
 
 Core::Transform* Core::Transform::RegisterChild(Core::Transform* _child)
