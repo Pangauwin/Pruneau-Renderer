@@ -85,6 +85,8 @@ static AssetExplorerState _state;
 static Core::Entity* editor_camera = nullptr;
 static Core::Entity* default_cube = nullptr;
 
+static Core::Entity* entity_to_open = nullptr;
+
 void EngineLayer::EngineLayer::OnAttach()
 {
     // Import ressources    
@@ -363,7 +365,7 @@ void EngineLayer::EngineLayer::OnGUIRender()
 #pragma region LevelInspector
     ImGui::Begin("Level Inspector");
 
-    if (ImGui::BeginPopupContextWindow())
+    if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_NoOpenOverItems))
     {
         if (ImGui::Button("Add Entity"))
         {
@@ -375,9 +377,9 @@ void EngineLayer::EngineLayer::OnGUIRender()
         {
             ImGui::CloseCurrentPopup();
         }
-
         ImGui::EndPopup();
     }
+
 
     ImGui::EditableLabel("##level_name", _level->name);
 
@@ -635,8 +637,20 @@ void EngineLayer::EngineLayer::OnGUIRender()
                 {
                     glm::vec3 translation, rotation, scale;
 
+                    glm::mat4 parent_world = glm::mat4(1.0f);
+
+                    if (transform->GetOwner()->parent)
+                    {
+                        parent_world = transform->GetOwner()
+                            ->parent
+                            ->GetComponent<Core::Transform>()
+                            ->GetWorldTransformMatrix();
+                    }
+
+                    glm::mat4 local = glm::inverse(parent_world) * world;
+
                     ImGuizmo::DecomposeMatrixToComponents(
-                        glm::value_ptr(world),
+                        glm::value_ptr(local),
                         glm::value_ptr(translation),
                         glm::value_ptr(rotation),
                         glm::value_ptr(scale)
@@ -740,16 +754,44 @@ static void DrawEntityNode(Core::Entity* _entity)
 {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-    if (_entity->children.size() > 0)
+    if (_entity->children.empty())
     {
         flags |= ImGuiTreeNodeFlags_Leaf;
     }
 
+    if(entity_to_open == _entity)
+    {
+        ImGui::SetNextItemOpen(true);
+        entity_to_open = nullptr;
+    }
+
     bool open = ImGui::TreeNodeEx((void*)_entity, flags, "%s", _entity->name.c_str());
 
-    if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
     {
         selected_object = _entity;
+    }
+
+    if(ImGui::BeginPopupContextItem())
+    {
+        if(ImGui::MenuItem("Add Entity"))
+        {
+            entity_to_open = _entity;
+            Core::LevelManager::GetCurrentLevel()->CreateEntity("Entity", _entity);
+        }
+
+        // TODO : Implement these editor features
+        if(ImGui::MenuItem("Rename"))
+        {
+
+        }
+
+        if(ImGui::MenuItem("Delete"))
+        {
+
+        }
+
+        ImGui::EndPopup();
     }
 
     if (open)
