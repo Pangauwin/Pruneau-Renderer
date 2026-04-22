@@ -22,6 +22,7 @@ public:
     Level& operator=(Level&&) = default;
 
     Entity* CreateEntity(const char* _name, Entity* _parent = nullptr);
+    void DestroyEntity(Entity* _entity);
 
     void OnAwake();
     void OnStart();

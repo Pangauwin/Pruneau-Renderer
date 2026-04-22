@@ -19,6 +19,7 @@
 #include "core/components/editor_camera.h"
 
 #include "core/entity.h"
+#include "core/level.h"
 #include "glm/fwd.hpp"
 #include "renderer/renderer.h"
 #include "../core/event/event_dispatcher.h"
@@ -370,11 +371,6 @@ void EngineLayer::EngineLayer::OnGUIRender()
         if (ImGui::Button("Add Entity"))
         {
             _level->CreateEntity("Entity", nullptr);
-            ImGui::CloseCurrentPopup();
-        }
-
-        if (ImGui::Button("Delete"))
-        {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
@@ -783,12 +779,17 @@ static void DrawEntityNode(Core::Entity* _entity)
         // TODO : Implement these editor features
         if(ImGui::MenuItem("Rename"))
         {
-
+            
         }
 
         if(ImGui::MenuItem("Delete"))
         {
+            Core::LevelManager::GetCurrentLevel()->DestroyEntity(_entity);
+            selected_object = std::monostate();
+            ImGui::EndPopup();
 
+            if(open) ImGui::TreePop();
+            return;
         }
 
         ImGui::EndPopup();

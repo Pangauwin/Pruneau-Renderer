@@ -27,6 +27,8 @@ public:
 	virtual void OnRender() {}
 	virtual void OnEditorRender() {} //TODO : create a defined variable that make this function build on editor version only
 	virtual void OnGUIRender() {}
+	virtual void OnDestroy() {}
+
 	virtual Entity* GetOwner() { return m_owner; }
 
 private:

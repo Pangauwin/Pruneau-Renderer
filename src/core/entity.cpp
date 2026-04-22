@@ -64,3 +64,11 @@ void Core::Entity::OnGUIRender()
 		_child->OnGUIRender();
 	}
 }
+
+void Core::Entity::OnDestroy()
+{
+	for(auto& _comp : components)
+	{
+		_comp.second->OnDestroy();
+	}
+}

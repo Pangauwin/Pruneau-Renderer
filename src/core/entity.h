@@ -28,6 +28,11 @@ public:
 		{
 			delete _child;
 		}
+
+		for(auto& _component : components)
+		{
+			_component.second->OnDestroy();
+		}
 	}
 
 	Entity(const Entity&) = delete;
@@ -69,6 +74,7 @@ public:
 	void OnUpdate(float dt);
 	void OnRender();
 	void OnGUIRender();
+	void OnDestroy();
 
 private:
 	Entity* AddChild(Entity* _child)
