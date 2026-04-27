@@ -17,51 +17,10 @@
 
 #include "core/input/input.h"
 
-#include <iostream>
-
 static float dt = 0.00001f; // Avoid 0 divisions errors
 
 static Core::Application* current_application;
 
-void Core::LogMessage(std::string _message)
-{
-	if(Core::Application::Get())
-		Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_NONE);
-
-	std::cout << "[MESSAGE] : " << _message.c_str() << "\n";
-}
-
-void Core::LogMessageDebug(std::string _message)
-{
-	if(Core::Application::Get())
-		Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_DEBUG);
-
-	std::cout << "[DEBUG] : " << _message.c_str() << "\n";
-}
-
-void Core::LogMessageInfo(std::string _message)
-{
-	if(Core::Application::Get())
-		Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_INFO);
-
-	std::cout << "[INFO]" << _message.c_str() << "\n";
-}
-
-void Core::LogMessageWarning(std::string _message)
-{
-	if(Core::Application::Get())
-		Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_WARNING);
-
-	std::cout << "[WARNING]" << _message.c_str() << "\n";
-}
-
-void Core::LogMessageError(std::string _message)
-{
-	if(Core::Application::Get())
-		Core::Application::Get()->LogMessage(_message, EngineLayer::LOG_PRIORITY_ERROR);
-
-	std::cout << "[ERROR]" << _message.c_str() << "\n";
-}
 
 Core::Application::Application(AppParams _params) : 
 	m_window(std::make_unique<Platform::Window>(_params.window_params)), 
@@ -167,11 +126,6 @@ void Core::Application::PushOverlay(Layer* _layer)
 Core::Application* Core::Application::Get()
 {
 	return current_application;
-}
-
-void Core::Application::LogMessage(std::string _message, EngineLayer::LOG_PRIORITY _priority)
-{
-	m_engine_layer->LogMessage(_message, _priority);
 }
 
 void Core::Application::PollEvents()

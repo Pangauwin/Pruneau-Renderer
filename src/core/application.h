@@ -36,8 +36,6 @@ public:
 
 	static Application* Get();
 
-	void LogMessage(std::string _message, EngineLayer::LOG_PRIORITY _priority);
-
 private:
 	void PollEvents();
 	void Init();
