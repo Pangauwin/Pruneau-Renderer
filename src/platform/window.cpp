@@ -1,11 +1,13 @@
 #include "window.h"
 
+#include "platform.h"
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <iostream>
 
-#ifdef WINDOWS
+#ifdef PLATFORM_WINDOWS
 #include <Windows.h> // Message boxes
 #endif
 
@@ -94,7 +96,7 @@ Platform::Window::Window(WindowParams& _params) : params(_params), m_glfw_window
 
 	if (m_glfw_window == NULL)
 	{
-		#ifdef WINDOWS
+		#ifdef PLATFORM_WINDOWS
 		MessageBox(NULL, "Window Creation Failed !", NULL, MB_OK);
 		#endif
 
@@ -107,7 +109,7 @@ Platform::Window::Window(WindowParams& _params) : params(_params), m_glfw_window
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		#ifdef WINDOWS
+		#ifdef PLATFORM_WINDOWS
 		MessageBox(NULL, "Glad Loading Procedure Failed !", NULL, MB_OK);
 		#endif
 
