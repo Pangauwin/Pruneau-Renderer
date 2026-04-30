@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../src/core/layer.h"
-#include "../core/event/event.h"
+#include "core/layer.h"
+#include "core/event/event.h"
 
 #include <vector>
 #include <string>
