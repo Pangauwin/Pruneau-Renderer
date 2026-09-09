@@ -1,6 +1,5 @@
 #include "physics/mesh_shape_cache.h"
 
-#include <Jolt/Jolt.h>
 #include "Jolt/Core/Array.h"
 #include "Jolt/Core/Reference.h"
 #include "Jolt/Geometry/IndexedTriangle.h"

@@ -49,6 +49,8 @@ void Core::Application::Init()
 	Time::Init();
 
 	LevelManager::Init();
+	
+	m_physics_engine->Init();
 
 	TransformSystem* transform_system = new TransformSystem(); // TODO : Make this in a proper scope, destroy them at the end
 	transform_system->Register();
@@ -70,8 +72,6 @@ void Core::Application::Init()
 	{
 		l->OnAttach();
 	}
-
-	m_physics_engine->Init();
 }
 
 void Core::Application::Run()
