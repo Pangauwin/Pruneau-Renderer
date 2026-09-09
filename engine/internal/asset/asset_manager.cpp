@@ -20,6 +20,8 @@
 
 #include "core/application.h"
 #include "glm/fwd.hpp"
+#include "glm/geometric.hpp"
+#include "glm/matrix.hpp"
 #include "renderer/mesh.h"
 
 static bool EndsWith(const std::string& value, const std::string& ending);
@@ -264,7 +266,16 @@ static void ParseNode(aiNode* node, const aiScene* scene, const glm::mat4& _pare
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
 		ParsedMesh parsed_mesh = ParseMesh(mesh);
-		parsed_mesh.transform = global_transform;
+
+
+		glm::mat3 normal_matrix = glm::mat3(glm::transpose(glm::inverse(global_transform)));
+
+		for (Renderer::Vertex& v : parsed_mesh.vertices) {
+			v.position = glm::vec3(global_transform * glm::vec4(v.position, 1.0f));
+			v.normal = glm::normalize(normal_matrix * v.normal);
+		}
+
+		parsed_mesh.transform = glm::mat4(1.0f); //TODO: API change because this is no longer needed as it is identity
 
 		_model.meshes.push_back(parsed_mesh);
 	}

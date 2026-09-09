@@ -7,6 +7,7 @@
 #include "Jolt/Physics/Body/BodyInterface.h"
 #include "Jolt/Physics/Body/MotionType.h"
 #include "Jolt/Physics/EActivation.h"
+#include "Jolt/Physics/Collision/Shape/ScaledShape.h"
 #include "asset/asset.h"
 #include "asset/asset_manager.h"
 #include "components/camera.h"
@@ -134,6 +135,12 @@ void Core::RigidBodySystem::OnSimulationBegin(const Physics::OnSimulationBegin& 
     }
     else {
         shape = _rb.shape_settings.Create().Get();
+    }
+
+    JPH::Vec3 entity_scale(_tr.scale.x, _tr.scale.y, _tr.scale.z);
+    if(entity_scale != JPH::Vec3::sReplicate(1.0f) && shape != nullptr)
+    {
+        shape = new JPH::ScaledShape(shape, entity_scale);
     }
 
     _rb.body_settings = std::make_unique<JPH::BodyCreationSettings>(shape, 

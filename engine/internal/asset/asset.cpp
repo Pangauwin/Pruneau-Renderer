@@ -109,7 +109,7 @@ void Core::MeshAsset::DrawWireframe(const glm::mat4& _projection, const glm::mat
 	Core::AssetManager::collider_material->Bind();
 
 	Core::AssetManager::collider_material->GetShaderAsset()->GetShader()->SetMat4("view", _view);
-	Core::AssetManager::collider_material->GetShaderAsset()->GetShader()->SetMat4("model", glm::scale(_mesh, glm::vec3(100.f, 100.f, 100.f))); // TODO: this is a temporary fix to the scaling issue of the mesh importer. I should fix that
+	Core::AssetManager::collider_material->GetShaderAsset()->GetShader()->SetMat4("model", _mesh);
 	Core::AssetManager::collider_material->GetShaderAsset()->GetShader()->SetMat4("perspective", _projection);
 
 	glBindVertexArray(GetMesh()->VAO);

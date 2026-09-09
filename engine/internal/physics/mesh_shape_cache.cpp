@@ -43,7 +43,7 @@ JPH::RefConst<JPH::Shape> Physics::MeshShapeCache::GetOrBuild(Core::AssetID mesh
         verts.reserve(mesh->m_vertices.size());
         for(auto& v : mesh->m_vertices)
         {
-            verts.emplace_back(v.position.x * 100.f, v.position.y * 100.f, v.position.z * 100.f); // Multiply by 100 because the mesh importer does so (and it doesn't bother the renderer then)
+            verts.emplace_back(v.position.x, v.position.y, v.position.z);
         }
 
         JPH::IndexedTriangleList tris;
@@ -73,7 +73,7 @@ JPH::RefConst<JPH::Shape> Physics::MeshShapeCache::GetOrBuild(Core::AssetID mesh
 
         for(auto& v : mesh->m_vertices)
         {
-            points.emplace_back(v.position.x * 100.f, v.position.y * 100.f, v.position.z * 100.f); // Same thing here
+            points.emplace_back(v.position.x, v.position.y, v.position.z);
         }
 
         JPH::ConvexHullShapeSettings settings(points);
